@@ -29,6 +29,13 @@ repositories {
 }
 
 dependencies {
+    // Compatible mods
+    compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')
+    compileOnly rfg.deobf('curse.maven:bibliocraft-228027:3647708')
+    compileOnly rfg.deobf('curse.maven:botania-225643:3330934')
+    compileOnly rfg.deobf('curse.maven:embers-rekindled-300777:3695248')
+    compileOnly rfg.deobf('curse.maven:railcraft-51195:3853491')
+    compileOnly rfg.deobf('curse.maven:thaumcraft-223628:2629023')
     // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
     runtimeOnly 'com.cleanroommc:strip-latest-forge-requirements:1.0'
     // Include OSXNarratorBlocker by default for the dev env, for M1+ Macs
