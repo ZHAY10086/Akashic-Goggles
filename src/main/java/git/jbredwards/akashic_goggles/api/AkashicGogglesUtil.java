@@ -1,16 +1,17 @@
 package git.jbredwards.akashic_goggles.api;
 
-import git.jbredwards.akashic_goggles.mod.common.item.ItemAkashicGoggles;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
+import git.jbredwards.akashic_goggles.core.ASMHooks;
+import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.resource.IResourceType;
-import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -27,13 +28,23 @@ public enum AkashicGogglesUtil
     public static Stream<ItemStack> getContainedGoggles(@Nonnull final ItemStack stack) {
         if(!(stack.getItem() instanceof ItemAkashicGoggles)) return Stream.empty();
 
-
+        @Nullable final IItemHandler inventory = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        return inventory != null ? IntStream.range(0, inventory.getSlots()).mapToObj(inventory::getStackInSlot) : Stream.empty();
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void registerResourceListener(@Nonnull final IResourceType type, @Nonnull final IResourceManagerReloadListener listener) {
-        ((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener((ISelectiveResourceReloadListener)(manager, condition) -> {
-            if(condition.test(type)) listener.onResourceManagerReload(manager);
-        });
+    @Nonnull
+    public static ItemStack getMatchingGoggles(@Nonnull final EntityLivingBase entity, @Nonnull final ItemStack target) {
+        for(@Nonnull final ItemStack armor : entity.getArmorInventoryList()) {
+            if(target.isItemEqualIgnoreDurability(armor)) return armor;
+            // Search stored eyewear if the armor is akashic goggles.
+            @Nonnull final Optional<ItemStack> matching = getContainedGoggles(armor).filter(target::isItemEqualIgnoreDurability).findFirst();
+            if(matching.isPresent()) return matching.get();
+        }
+
+        return ASMHooks.HAS_BAUBLES ? ASMHooks.getMatchingGogglesBaubles(entity, target) : ItemStack.EMPTY;
+    }
+
+    public static void registerSupportedGoggles(@Nonnull final ItemStack stack) {
+        InventoryAkashicGoggles.SUPPORTED_GOGGLES.put(stack.getItem(), stack.getItemDamage());
     }
 }

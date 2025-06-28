@@ -26,14 +26,14 @@ public final class ASMHandler implements IFMLLoadingPlugin
 
     @Nonnull
     @Override
-    public String[] getASMTransformerClass() {
-        return new String[0];
+    public String getModContainerClass() {
+        return "git.jbredwards.akashic_goggles.mod.AkashicGoggles";
     }
 
     @Nonnull
     @Override
-    public String getModContainerClass() {
-        return "git.jbredwards.akashic_goggles.mod.AkashicGoggles";
+    public String[] getASMTransformerClass() {
+        return new String[] {"git.jbredwards.akashic_goggles.core.Transformer"};
     }
 
     // -----

@@ -29,6 +29,8 @@ repositories {
 }
 
 dependencies {
+    // Required mods
+    compileOnly rfg.deobf('curse.maven:autoreglib-250363:2746011')
     // Compatible mods
     compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')
     compileOnly rfg.deobf('curse.maven:bibliocraft-228027:3647708')
