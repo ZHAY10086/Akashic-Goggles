@@ -7,6 +7,7 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.core.ASMHandler;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.common.compat.bibliocraft.CompatBiblioCraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -29,7 +30,8 @@ import net.minecraftforge.fml.client.FMLFileResourcePack;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.discovery.ModCandidate;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
 import net.minecraftforge.fml.common.versioning.VersionParser;
@@ -67,6 +69,22 @@ public final class AkashicGoggles extends DummyModContainer
         public ItemStack createIcon() { return new ItemStack(GOGGLES); }
     };
 
+    public static boolean HAS_BAUBLES = false;
+    public static boolean HAS_BIBLIOCRAFT = false;
+
+    @Subscribe
+    public void preInit(@Nonnull final FMLPreInitializationEvent event) {
+        HAS_BAUBLES = Loader.isModLoaded("baubles");
+        if(HAS_BIBLIOCRAFT = Loader.isModLoaded("bibliocraft")) CompatBiblioCraft.preInit();
+    }
+
+    @Subscribe
+    @SideOnly(Side.CLIENT)
+    public void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
+        createMetadataTranslated(getMetadata());
+        if(HAS_BIBLIOCRAFT) CompatBiblioCraft.postInitClient();
+    }
+
     // -------------------------------------
     // Internal mod container stuffs (START)
     // -------------------------------------
@@ -91,20 +109,19 @@ public final class AkashicGoggles extends DummyModContainer
         }
     }
 
+    @SideOnly(Side.CLIENT)
+    private void createMetadataTranslated(@Nonnull  final ModMetadata metadata) {
+        registerResourceListener(VanillaResourceType.LANGUAGES, manager -> {
+            metadata.credits = I18n.format(creditsKey).replace("\\n", "\n");
+            metadata.description = I18n.format(descKey);
+        });
+    }
+
     @Subscribe
     public void createOwnedPackages(@Nonnull final FMLConstructionEvent event) {
         ownedPackages.addAll(Arrays.asList(event.getASMHarvestedData().getCandidatesFor("git.jbredwards.akashic_goggles").stream().map(ModCandidate::getContainedPackages).flatMap(List::stream).distinct().toArray(String[]::new)));
         MinecraftForge.EVENT_BUS.register(InventoryAkashicGoggles.class);
         MinecraftForge.EVENT_BUS.register(getClass());
-    }
-
-    @Subscribe
-    @SideOnly(Side.CLIENT)
-    public void createMetadataTranslated(@Nonnull final FMLInitializationEvent event) {
-        registerResourceListener(VanillaResourceType.LANGUAGES, manager -> {
-            getMetadata().credits = I18n.format(creditsKey).replace("\\n", "\n");
-            getMetadata().description = I18n.format(descKey);
-        });
     }
 
     @SideOnly(Side.CLIENT)

@@ -1,0 +1,11 @@
+{
+  "item.empty": {
+    "subtitle": "",
+    "sounds": [
+      {
+        "type": "event",
+        "name": ""
+      }
+    ]
+  }
+}

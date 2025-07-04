@@ -3,11 +3,15 @@ package git.jbredwards.akashic_goggles.mod.common;
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import baubles.api.cap.BaublesCapabilities;
+import baubles.api.render.IRenderBauble;
 import com.google.common.collect.Multimap;
 import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -48,8 +52,10 @@ import java.util.List;
  * @author jbred
  *
  */
-@Optional.Interface(modid = "baubles", iface = "baubles.api.IBauble")
-public class ItemAkashicGoggles extends ItemMod implements IBauble
+@Optional.InterfaceList({
+@Optional.Interface(modid = "baubles", iface = "baubles.api.IBauble"),
+@Optional.Interface(modid = "baubles", iface = "baubles.api.render.IRenderBauble")})
+public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBauble
 {
     @Nonnull
     public static final String NBT_KEY_INV = Tags.MOD_ID + ":inventory", NBT_KEY_VALID = Tags.MOD_ID + ":is_valid";
@@ -63,14 +69,14 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(@Nonnull final EntityEquipmentSlot slot, @Nonnull final ItemStack goggles) {
         @Nonnull final Multimap<String, AttributeModifier> modifiers = super.getAttributeModifiers(slot, goggles);
-        AkashicGogglesUtil.getContainedGoggles(goggles).forEach(stack -> modifiers.putAll(stack.getItem().getAttributeModifiers(slot, stack)));
+        AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getItem().getAttributeModifiers(slot, stack)));
         return modifiers;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public void renderHelmetOverlay(@Nonnull final ItemStack goggles, @Nonnull final EntityPlayer player, @Nonnull final ScaledResolution resolution, final float partialTicks) {
-        AkashicGogglesUtil.getContainedGoggles(goggles).forEach(stack -> stack.getItem().renderHelmetOverlay(stack, player, resolution, partialTicks));
+        AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> stack.getItem().renderHelmetOverlay(stack, player, resolution, partialTicks));
     }
 
     @SideOnly(Side.CLIENT)
@@ -105,7 +111,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
 
     @Nullable
     @Override
-    public ICapabilityProvider initCapabilities(@Nonnull final ItemStack stack, @Nullable final NBTTagCompound nbt) {
+    public ICapabilityProvider initCapabilities(@Nonnull final ItemStack goggles, @Nullable final NBTTagCompound nbt) {
         return new AbstractDropIn() {
             @Override
             public boolean canDropItemIn(@Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
@@ -123,27 +129,29 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
             @Nullable
             @Override
             public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-                return capability == IDropInItem.DROP_IN_CAPABILITY && ItemNBTHelper.getBoolean(stack, NBT_KEY_VALID, false) ? super.getCapability(capability, null)
-                        : capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new InventoryAkashicGoggles(stack)) : null;
+                return capability == IDropInItem.DROP_IN_CAPABILITY && isValid(goggles) ? super.getCapability(capability, null)
+                        : capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new InventoryAkashicGoggles(goggles)) : null;
             }
 
             @Override
             public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-                return super.hasCapability(capability, null) && ItemNBTHelper.getBoolean(stack, NBT_KEY_VALID, false) || capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+                return super.hasCapability(capability, null) && isValid(goggles) || capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
             }
         };
     }
 
+    // Let's prevent people from inserting items into JEI akashic goggles...
+    public static boolean isValid(@Nonnull final ItemStack goggles) { return ItemNBTHelper.getBoolean(goggles, NBT_KEY_VALID, false); }
+    public static void setValid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_KEY_VALID, true); }
+
     @Override
-    public void onCreated(@Nonnull final ItemStack stack, @Nonnull final World worldIn, @Nonnull final EntityPlayer playerIn) {
-        // Let's prevent people from being able to insert items into JEI akashic goggles...
-        ItemNBTHelper.setBoolean(stack, NBT_KEY_VALID, true);
+    public void onCreated(@Nonnull final ItemStack goggles, @Nonnull final World worldIn, @Nonnull final EntityPlayer playerIn) {
+        setValid(goggles);
     }
 
     @Override
-    public void onUpdate(@Nonnull final ItemStack stack, @Nonnull final World worldIn, @Nonnull final Entity entityIn, final int itemSlot, final boolean isSelected) {
-        // Let's prevent people from being able to insert items into JEI akashic goggles...
-        ItemNBTHelper.setBoolean(stack, NBT_KEY_VALID, true);
+    public void onUpdate(@Nonnull final ItemStack goggles, @Nonnull final World worldIn, @Nonnull final Entity entityIn, final int itemSlot, final boolean isSelected) {
+        setValid(goggles);
     }
 
     @Nonnull
@@ -169,7 +177,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Optional.Method(modid = "baubles")
     @Override
     public void onEquipped(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
-        AkashicGogglesUtil.getContainedGoggles(goggles)
+        AkashicGogglesUtil.getContainedStacks(goggles)
                 .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
                 .map(stack -> Pair.of(stack, stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null)))
                 .forEach(entry -> entry.getRight().onEquipped(entry.getLeft(), wearer));
@@ -178,7 +186,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Optional.Method(modid = "baubles")
     @Override
     public void onUnequipped(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
-        AkashicGogglesUtil.getContainedGoggles(goggles)
+        AkashicGogglesUtil.getContainedStacks(goggles)
                 .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
                 .map(stack -> Pair.of(stack, stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null)))
                 .forEach(entry -> entry.getRight().onUnequipped(entry.getLeft(), wearer));
@@ -187,7 +195,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Optional.Method(modid = "baubles")
     @Override
     public void onWornTick(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
-        AkashicGogglesUtil.getContainedGoggles(goggles)
+        AkashicGogglesUtil.getContainedStacks(goggles)
                 .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
                 .map(stack -> Pair.of(stack, stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null)))
                 .forEach(entry -> entry.getRight().onWornTick(entry.getLeft(), wearer));
@@ -196,7 +204,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Optional.Method(modid = "baubles")
     @Override
     public boolean willAutoSync(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
-        return AkashicGogglesUtil.getContainedGoggles(goggles)
+        return AkashicGogglesUtil.getContainedStacks(goggles)
                 .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
                 .map(stack -> Pair.of(stack, stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null)))
                 .anyMatch(entry -> entry.getRight().willAutoSync(entry.getLeft(), wearer));
@@ -207,5 +215,20 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble
     @Override
     public BaubleType getBaubleType(@Nonnull final ItemStack goggles) {
         return BaubleType.TRINKET; // TODO
+    }
+
+    @Override
+    public void onPlayerBaubleRender(@Nonnull final ItemStack goggles, @Nonnull final EntityPlayer player, @Nonnull final RenderType renderType, final float partialTicks) {
+        if(renderType == RenderType.HEAD) {
+            IRenderBauble.Helper.translateToHeadLevel(player);
+            IRenderBauble.Helper.translateToFace();
+            IRenderBauble.Helper.defaultTransforms();
+
+            final double scale = 0.625 / 0.55;
+            GlStateManager.translate(0, -0.25, 0);
+            GlStateManager.scale(scale, scale, scale);
+
+            Minecraft.getMinecraft().getItemRenderer().renderItem(player, goggles, ItemCameraTransforms.TransformType.HEAD);
+        }
     }
 }
