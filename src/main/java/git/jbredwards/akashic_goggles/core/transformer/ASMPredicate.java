@@ -15,6 +15,11 @@ import java.util.function.BiPredicate;
 public interface ASMPredicate extends BiPredicate<MethodNode, AbstractInsnNode>
 {
     @Nonnull
+    default ASMPredicate and(@Nonnull final BiPredicate<? super MethodNode, ? super AbstractInsnNode> other) {
+        return (t, u) -> test(t, u) && other.test(t, u);
+    }
+
+    @Nonnull
     default ASMPredicate andPrev(@Nonnull final BiPredicate<? super MethodNode, ? super AbstractInsnNode> other) {
         return (t, u) -> u.getPrevious() != null && test(t, u) && other.test(t, u.getPrevious());
     }

@@ -7,7 +7,7 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.core.ASMHandler;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
-import git.jbredwards.akashic_goggles.mod.common.compat.bibliocraft.CompatBiblioCraft;
+import git.jbredwards.akashic_goggles.mod.common.baubles.CompatBaubles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -70,19 +70,17 @@ public final class AkashicGoggles extends DummyModContainer
     };
 
     public static boolean HAS_BAUBLES = false;
-    public static boolean HAS_BIBLIOCRAFT = false;
 
     @Subscribe
     public void preInit(@Nonnull final FMLPreInitializationEvent event) {
-        HAS_BAUBLES = Loader.isModLoaded("baubles");
-        if(HAS_BIBLIOCRAFT = Loader.isModLoaded("bibliocraft")) CompatBiblioCraft.preInit();
+        if(HAS_BAUBLES = Loader.isModLoaded("baubles")) CompatBaubles.preInit();
     }
 
     @Subscribe
     @SideOnly(Side.CLIENT)
     public void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
+        if(HAS_BAUBLES) CompatBaubles.postInitClient();
         createMetadataTranslated(getMetadata());
-        if(HAS_BIBLIOCRAFT) CompatBiblioCraft.postInitClient();
     }
 
     // -------------------------------------

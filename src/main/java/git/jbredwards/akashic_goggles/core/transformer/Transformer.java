@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.*;
 
 import javax.annotation.Nonnull;
@@ -107,11 +108,78 @@ public final class Transformer implements IClassTransformer, Opcodes
         addMapping("jds/bibliocraft/items/ItemReadingGlasses <init>()V", builder -> {
             // Add all reading glasses to list of supported items for Akashic Goggles.
             // Old: N/A
-            // New: ASMHooks.registerGoggles(this)
+            // New: ASMHooks.registerGlasses(this)
             builder.put(map("net/minecraft/item/ItemArmor <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V"), (instructions, insn) -> {
+                instructions.insert(insn, hook("registerGlasses", "(Lnet/minecraft/item/Item;)V"));
+                instructions.insert(insn, new VarInsnNode(ALOAD, 0));
+            });
+        });
+        // =======
+        // Botania
+        // =======
+        addMapping("vazkii/botania/common/item/equipment/bauble/ItemMonocle <init>()V", builder -> {
+            // Add all monocles to list of supported items for Akashic Goggles.
+            // Old: N/A
+            // New: ASMHooks.registerGoggles(this)
+            builder.put(map("vazkii/botania/common/item/equipment/bauble/ItemBauble <init>(Ljava/lang/String;)V"), (instructions, insn) -> {
                 instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/Item;)V"));
                 instructions.insert(insn, new VarInsnNode(ALOAD, 0));
             });
+        });
+        addOverwrite("vazkii/botania/common/item/equipment/bauble/ItemMonocle hasMonocle(Lnet/minecraft/entity/player/EntityPlayer;)Z", adapter -> {
+            // Account for Akashic Goggles.
+            // Old: { ... }
+            // New: { return ASMHooks.hasMonocle(player) }
+            adapter.visitVarInsn(ALOAD, 0);
+            hook(adapter, "hasMonocle", "(Lnet/minecraft/entity/player/EntityPlayer;)Z");
+        });
+        // ======
+        // Embers
+        // ======
+        addMapping("teamroots/embers/item/ItemAshenCloak <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V", builder -> {
+            // Add all ash goggles to list of supported items for Akashic Goggles.
+            // Old: N/A
+            // New: ASMHooks.registerGoggles(this)
+            builder.put(map("teamroots/embers/item/ItemArmorBase <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;Ljava/lang/String;Z)V"), (instructions, insn) -> {
+                instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/ItemArmor;)V"));
+                instructions.insert(insn, new VarInsnNode(ALOAD, 0));
+            });
+        });
+        addOverwrite("teamroots/embers/proxy/ClientProxy isGoggles(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z", adapter -> {
+            // Account for Akashic Googles and Baubles slots.
+            // Old: { ... }
+            // New: { return ASMHooks.isGoggles(player, slot) }
+            adapter.visitVarInsn(ALOAD, 1);
+            adapter.visitVarInsn(ALOAD, 2);
+            hook(adapter, "isGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z");
+        });
+        // =========
+        // Railcraft
+        // =========
+        addMapping("mods/railcraft/common/items/ItemGoggles <init>()V", builder -> {
+            // Add all railman goggles to list of supported items for Akashic Goggles.
+            // Old: N/A
+            // New: ASMHooks.registerGoggles(this)
+            builder.put(map("mods/railcraft/common/items/ItemRailcraftArmor <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V"), (instructions, insn) -> {
+                instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/ItemArmor;)V"));
+                instructions.insert(insn, new VarInsnNode(ALOAD, 0));
+            });
+        });
+        addOverwrite("mods/railcraft/common/items/ItemGoggles getGoggles(Lnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;", adapter -> {
+            // Account for Akashic Googles and Baubles slots.
+            // Old: { ... }
+            // New: { return ASMHooks.getGoggles(player, null) }
+            adapter.visitVarInsn(ALOAD, 0);
+            adapter.visitInsn(ACONST_NULL);
+            hook(adapter, "getGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;Lmods/railcraft/common/items/ItemGoggles$GoggleAura;)Lnet/minecraft/item/ItemStack;");
+        });
+        addOverwrite("mods/railcraft/common/items/ItemGoggles isPlayerWearing(Lnet/minecraft/entity/player/EntityPlayer;)Z", adapter -> {
+            // Account for Akashic Googles and Baubles slots.
+            // Old: { ... }
+            // New: { return ASMHooks.isPlayerWearing(player, null) }
+            adapter.visitVarInsn(ALOAD, 0);
+            adapter.visitInsn(ACONST_NULL);
+            hook(adapter, "isPlayerWearing", "(Lnet/minecraft/entity/player/EntityPlayer;Lmods/railcraft/common/items/ItemGoggles$GoggleAura;)Z");
         });
     }
 
@@ -121,6 +189,19 @@ public final class Transformer implements IClassTransformer, Opcodes
 
         @Nonnull final String[] mapping = targetMethod.split(" ");
         MAPPINGS.computeIfAbsent(mapping[0].replace('/', '.'), key -> new HashMap<>()).put(mapping[1], new HashMap<>(builder.build()));
+    }
+
+    private static void addOverwrite(@Nonnull final String targetMethod, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        addMapping(targetMethod, builder -> builder.put((method, insn) -> method.instructions.getFirst() == insn, ASMConsumer.method((method, insn) -> {
+            method.instructions.clear();
+            method.tryCatchBlocks.clear();
+            method.localVariables.clear();
+
+            @Nonnull final GeneratorAdapter adapter = new GeneratorAdapter(method, method.access, method.name, method.desc);
+            generator.accept(adapter);
+            adapter.returnValue();
+            adapter.endMethod();
+        })));
     }
 
     @Nullable
@@ -136,7 +217,7 @@ public final class Transformer implements IClassTransformer, Opcodes
         for(@Nonnull final MethodNode method : classNode.methods) {
             @Nullable final Map<ASMPredicate, ASMConsumer> actionMappings = methodMappings.get(method.name + method.desc);
             if(actionMappings != null) for(@Nonnull final AbstractInsnNode insn : method.instructions.toArray()) {
-                actionMappings.entrySet().stream().filter(e -> e.getKey().test(method, insn)).forEach(e -> e.getValue().accept(method.instructions, insn));
+                actionMappings.entrySet().stream().filter(e -> e.getKey().test(method, insn)).forEach(e -> e.getValue().acceptMethod(method, insn));
             }
         }
 
@@ -165,12 +246,15 @@ public final class Transformer implements IClassTransformer, Opcodes
 
     @Nonnull
     private static ASMPredicate var(@Nonnull final String var) {
-        return (method, insn) -> {
-            if(!(insn instanceof VarInsnNode)) return false;
-            @Nonnull final OptionalInt index = method.localVariables.stream()
-                    .filter(local -> local.name.equals(var))
-                    .mapToInt(local -> local.index).findFirst();
-            return index.isPresent() && ((VarInsnNode)insn).var == index.getAsInt();
+        return new ASMPredicate() {
+            @Nullable
+            OptionalInt index;
+
+            @Override
+            public boolean test(@Nonnull final MethodNode method, @Nonnull final AbstractInsnNode insn) {
+                if(index == null) index = method.localVariables.stream().filter(local -> local.name.equals(var)).mapToInt(local -> local.index).findFirst();
+                return index.isPresent() && insn instanceof VarInsnNode && ((VarInsnNode)insn).var == index.getAsInt();
+            }
         };
     }
 
@@ -181,5 +265,9 @@ public final class Transformer implements IClassTransformer, Opcodes
     @Nonnull
     private static MethodInsnNode hook(@Nonnull final String name, @Nonnull final String desc) {
         return new MethodInsnNode(INVOKESTATIC, "git/jbredwards/akashic_goggles/core/ASMHooks", name, desc, false);
+    }
+
+    private static void hook(@Nonnull final MethodVisitor visitor, @Nonnull final String name, @Nonnull final String desc) {
+        visitor.visitMethodInsn(INVOKESTATIC, "git/jbredwards/akashic_goggles/core/ASMHooks", name, desc, false);
     }
 }

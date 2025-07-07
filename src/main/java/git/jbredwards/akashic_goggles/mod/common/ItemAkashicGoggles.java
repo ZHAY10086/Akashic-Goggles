@@ -9,9 +9,11 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -46,6 +48,7 @@ import vazkii.arl.util.TooltipHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -219,15 +222,13 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
 
     @Override
     public void onPlayerBaubleRender(@Nonnull final ItemStack goggles, @Nonnull final EntityPlayer player, @Nonnull final RenderType renderType, final float partialTicks) {
-        if(renderType == RenderType.HEAD) {
-            IRenderBauble.Helper.translateToHeadLevel(player);
-            IRenderBauble.Helper.translateToFace();
-            IRenderBauble.Helper.defaultTransforms();
-
-            final double scale = 0.625 / 0.55;
+        if(renderType == RenderType.BODY && player instanceof AbstractClientPlayer) {
+            if(player.isSneaking()) GlStateManager.translate(0, 0.2, 0);
+            Objects.requireNonNull((RenderPlayer)Minecraft.getMinecraft().getRenderManager().<AbstractClientPlayer>getEntityRenderObject(player)).getMainModel().bipedHead.postRender(0.0625f);
             GlStateManager.translate(0, -0.25, 0);
-            GlStateManager.scale(scale, scale, scale);
 
+            GlStateManager.rotate(180, 0, 1, 0);
+            GlStateManager.scale(0.625, -0.625, -0.625);
             Minecraft.getMinecraft().getItemRenderer().renderItem(player, goggles, ItemCameraTransforms.TransformType.HEAD);
         }
     }

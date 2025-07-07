@@ -1,10 +1,10 @@
 package git.jbredwards.akashic_goggles.mod.common;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import git.jbredwards.akashic_goggles.Tags;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -38,8 +38,7 @@ import java.util.stream.IntStream;
 public class InventoryAkashicGoggles extends ItemStackHandler
 {
     @Nonnull
-    public static final Object2IntMap<Item> VALID_ITEMS = new Object2IntOpenHashMap<>();
-    static { VALID_ITEMS.defaultReturnValue(-2); }
+    public static final Multimap<Item, Integer> VALID_ITEMS = HashMultimap.create();
 
     @Nonnull
     public static final ResourceLocation SLOT_TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/gui/slot.png");
@@ -51,6 +50,10 @@ public class InventoryAkashicGoggles extends ItemStackHandler
         super(WIDTH * HEIGHT);
         goggles = gogglesIn;
         deserializeNBT(ItemNBTHelper.getNBT(gogglesIn).getCompoundTag(ItemAkashicGoggles.NBT_KEY_INV));
+    }
+
+    public static boolean isItemValid(@Nonnull final ItemStack stack) {
+        return VALID_ITEMS.get(stack.getItem()).contains(stack.getHasSubtypes() ? stack.getItemDamage() : 0);
     }
 
     @SubscribeEvent
@@ -155,14 +158,19 @@ public class InventoryAkashicGoggles extends ItemStackHandler
 
     @Override
     public boolean isItemValid(final int slot, @Nonnull final ItemStack stack) {
-        final int targetDamage = stack.isItemStackDamageable() ? 0 : stack.getItemDamage();
-        return VALID_ITEMS.getInt(stack.getItem()) == targetDamage && stacks.stream().noneMatch(stack::isItemEqualIgnoreDurability);
+        return isItemValid(stack) && stacks.stream().noneMatch(stack.getHasSubtypes() ? other -> ItemStack.areItemsEqual(stack, other) : other -> ItemStack.areItemsEqualIgnoreDurability(stack, other));
+    }
+
+    @Nonnull
+    @Override
+    public ItemStack extractItem(final int slot, final int amount, final boolean simulate) {
+        return ItemNBTHelper.getBoolean(goggles, Tags.MOD_ID + ":mutable", true) ? super.extractItem(slot, amount, simulate) : ItemStack.EMPTY;
     }
 
     @Nonnull
     @Override
     public ItemStack insertItem(final int slot, @Nonnull final ItemStack stack, final boolean simulate) {
-        if(stack.isEmpty() || isItemValid(slot, stack)) {
+        if((stack.isEmpty() || isItemValid(slot, stack)) && ItemNBTHelper.getBoolean(goggles, Tags.MOD_ID + ":mutable", true)) {
             @Nonnull final ItemStack result = super.insertItem(slot, stack, simulate);
             addRow(stack);
             return result;
@@ -173,6 +181,7 @@ public class InventoryAkashicGoggles extends ItemStackHandler
 
     @Override
     public void setStackInSlot(final int slot, @Nonnull final ItemStack stack) {
+        // Don't check extract/insert tags here, is it might cause item duplication issues with badly coded mods.
         if(stack.isEmpty() || isItemValid(slot, stack)) {
             super.setStackInSlot(slot, stack);
             addRow(stack);
