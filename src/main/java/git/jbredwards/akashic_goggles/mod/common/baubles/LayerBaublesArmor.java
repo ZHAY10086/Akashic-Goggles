@@ -31,7 +31,7 @@ public class LayerBaublesArmor extends LayerBipedArmor
 
     @Override
     protected void initArmor() { modelArmor = new ModelBiped(0.25f); /* Use a size of 0.25 to render under helmets. */ }
-    protected static boolean shouldRender(@Nonnull final ItemStack stack) { return CompatBaubles.LOADED_HANDLERS.stream().anyMatch(ch -> ch.condition.test(stack)); }
+    protected static boolean shouldRender(@Nonnull final ItemStack stack) { return CompatHandler.LOADED_HANDLERS.stream().anyMatch(ch -> ch.condition.test(stack)); }
 
     @Override
     public void doRenderLayer(@Nonnull final EntityLivingBase entity, final float limbSwing, final float limbSwingAmount, final float partialTicks, final float ageInTicks, final float netHeadYaw, final float headPitch, final float scale) {

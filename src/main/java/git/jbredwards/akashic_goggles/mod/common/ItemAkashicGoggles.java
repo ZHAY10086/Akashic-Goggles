@@ -39,6 +39,8 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.tuple.Pair;
+import thaumcraft.api.items.IGoggles;
+import thaumcraft.api.items.IRevealer;
 import vazkii.arl.interf.IDropInItem;
 import vazkii.arl.item.ItemMod;
 import vazkii.arl.util.AbstractDropIn;
@@ -57,8 +59,10 @@ import java.util.Objects;
  */
 @Optional.InterfaceList({
 @Optional.Interface(modid = "baubles", iface = "baubles.api.IBauble"),
-@Optional.Interface(modid = "baubles", iface = "baubles.api.render.IRenderBauble")})
-public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBauble
+@Optional.Interface(modid = "baubles", iface = "baubles.api.render.IRenderBauble"),
+@Optional.Interface(modid = "thaumcraft", iface = "thaumcraft.api.items.IGoggles"),
+@Optional.Interface(modid = "thaumcraft", iface = "thaumcraft.api.items.IRevealer")})
+public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBauble, IGoggles, IRevealer
 {
     @Nonnull
     public static final String NBT_KEY_INV = Tags.MOD_ID + ":inventory", NBT_KEY_VALID = Tags.MOD_ID + ":is_valid";
@@ -213,13 +217,7 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
                 .anyMatch(entry -> entry.getRight().willAutoSync(entry.getLeft(), wearer));
     }
 
-    @Nonnull
     @Optional.Method(modid = "baubles")
-    @Override
-    public BaubleType getBaubleType(@Nonnull final ItemStack goggles) {
-        return BaubleType.TRINKET; // TODO
-    }
-
     @Override
     public void onPlayerBaubleRender(@Nonnull final ItemStack goggles, @Nonnull final EntityPlayer player, @Nonnull final RenderType renderType, final float partialTicks) {
         if(renderType == RenderType.BODY && player instanceof AbstractClientPlayer) {
@@ -231,5 +229,30 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
             GlStateManager.scale(0.625, -0.625, -0.625);
             Minecraft.getMinecraft().getItemRenderer().renderItem(player, goggles, ItemCameraTransforms.TransformType.HEAD);
         }
+    }
+
+    @Nonnull
+    @Optional.Method(modid = "baubles")
+    @Override
+    public BaubleType getBaubleType(@Nonnull final ItemStack goggles) {
+        return BaubleType.TRINKET; // TODO
+    }
+
+    // ----------------------
+    // Thaumcraft Integration
+    // ----------------------
+
+    @Optional.Method(modid = "thaumcraft")
+    @Override
+    public boolean showIngamePopups(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase player) {
+        return player.getHeldItemMainhand() != goggles && player.getHeldItemOffhand() != goggles && AkashicGogglesUtil.getContainedStacks(goggles)
+                .anyMatch(stack -> stack.getItem() instanceof IGoggles && ((IGoggles)stack.getItem()).showIngamePopups(stack, player));
+    }
+
+    @Optional.Method(modid = "thaumcraft")
+    @Override
+    public boolean showNodes(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase player) {
+        return player.getHeldItemMainhand() != goggles && player.getHeldItemOffhand() != goggles && AkashicGogglesUtil.getContainedStacks(goggles)
+                .anyMatch(stack -> stack.getItem() instanceof IRevealer && ((IRevealer)stack.getItem()).showNodes(stack, player));
     }
 }

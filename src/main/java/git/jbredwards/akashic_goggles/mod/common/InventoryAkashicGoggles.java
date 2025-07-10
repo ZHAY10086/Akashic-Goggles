@@ -3,8 +3,10 @@ package git.jbredwards.akashic_goggles.mod.common;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import git.jbredwards.akashic_goggles.Tags;
+import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import mods.railcraft.common.items.ItemGoggles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -158,7 +160,10 @@ public class InventoryAkashicGoggles extends ItemStackHandler
 
     @Override
     public boolean isItemValid(final int slot, @Nonnull final ItemStack stack) {
-        return isItemValid(stack) && stacks.stream().noneMatch(stack.getHasSubtypes() ? other -> ItemStack.areItemsEqual(stack, other) : other -> ItemStack.areItemsEqualIgnoreDurability(stack, other));
+        return isItemValid(stack) && stacks.stream().noneMatch(other -> {
+            if(stack.getHasSubtypes() ? !ItemStack.areItemsEqual(stack, other) : !ItemStack.areItemsEqualIgnoreDurability(stack, other)) return false;
+            else return !CompatHandler.RAILCRAFT.test(stack) || !CompatHandler.RAILCRAFT.test(other) || ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
+        });
     }
 
     @Nonnull

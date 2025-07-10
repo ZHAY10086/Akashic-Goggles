@@ -1,10 +1,13 @@
 package git.jbredwards.akashic_goggles.core;
 
+import de.ellpeck.actuallyadditions.api.misc.IGoggles;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import jds.bibliocraft.events.EventBlockMarkerHighlight;
 import mods.railcraft.api.items.InvToolsAPI;
+import mods.railcraft.client.core.AuraKeyHandler;
 import mods.railcraft.common.items.ItemGoggles;
+import mods.railcraft.common.items.RailcraftItems;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -37,6 +40,19 @@ public final class ASMHooks
 
     public static void registerGoggles(@Nonnull final Item item) {
         InventoryAkashicGoggles.VALID_ITEMS.put(item, 0);
+    }
+
+    // ------------------
+    // Actually Additions
+    // ------------------
+
+    public static boolean isWearing(@Nonnull final EntityPlayer player) {
+        return !AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof IGoggles).isEmpty();
+    }
+
+    @Nonnull
+    public static ItemStack getWearing(@Nonnull final EntityPlayer player) {
+        return AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof IGoggles && ((IGoggles)stack.getItem()).displaySpectralMobs());
     }
 
     // ----------
@@ -117,6 +133,10 @@ public final class ASMHooks
     public static ItemStack getGoggles(@Nullable final EntityPlayer player, @Nullable final ItemGoggles.GoggleAura aura) {
         return player == null ? null : AkashicGogglesUtil.findStack(player, stack
                 -> stack.getItem() instanceof ItemGoggles && (aura == null || aura == ItemGoggles.getCurrentAura(stack)));
+    }
+
+    public static boolean isGoggleAuraActive(@Nonnull final ItemGoggles.GoggleAura aura) {
+        return RailcraftItems.GOGGLES.isLoaded() ? isPlayerWearing(FMLClientHandler.instance().getClientPlayerEntity(), aura) : AuraKeyHandler.isAuraEnabled(aura);
     }
 
     public static boolean isPlayerWearing(@Nullable final EntityPlayer player, @Nullable final ItemGoggles.GoggleAura aura) {

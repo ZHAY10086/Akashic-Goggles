@@ -7,7 +7,7 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.core.ASMHandler;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
-import git.jbredwards.akashic_goggles.mod.common.baubles.CompatBaubles;
+import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -73,13 +73,13 @@ public final class AkashicGoggles extends DummyModContainer
 
     @Subscribe
     public void preInit(@Nonnull final FMLPreInitializationEvent event) {
-        if(HAS_BAUBLES = Loader.isModLoaded("baubles")) CompatBaubles.preInit();
+        if(HAS_BAUBLES = Loader.isModLoaded("baubles")) CompatHandler.preInit();
     }
 
     @Subscribe
     @SideOnly(Side.CLIENT)
     public void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
-        if(HAS_BAUBLES) CompatBaubles.postInitClient();
+        if(HAS_BAUBLES) CompatHandler.postInitClient();
         createMetadataTranslated(getMetadata());
     }
 

@@ -28,7 +28,9 @@ public interface ASMConsumer extends BiConsumer<InsnList, AbstractInsnNode>
             }
 
             @Override
-            public void accept(@Nonnull final InsnList instructions, AbstractInsnNode insn) {}
+            public void accept(@Nonnull final InsnList instructions, AbstractInsnNode insn) {
+                throw new UnsupportedOperationException("Call ASMConsumer::acceptMethod instead.");
+            }
         };
     }
 }
