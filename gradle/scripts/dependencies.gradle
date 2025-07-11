@@ -39,6 +39,7 @@ dependencies {
     compileOnly rfg.deobf('curse.maven:embers-rekindled-300777:3695248')
     compileOnly rfg.deobf('curse.maven:erebus-220698:3211974')
     compileOnly rfg.deobf('curse.maven:galacticraft-564236:6364107')
+    compileOnly rfg.deobf('curse.maven:natures-aura-306626:2882138')
     compileOnly rfg.deobf('curse.maven:openblocks-228816:2699056')
     compileOnly rfg.deobf('curse.maven:railcraft-51195:3853491')
     compileOnly rfg.deobf('curse.maven:simply-jetpacks-251792:3294422')
