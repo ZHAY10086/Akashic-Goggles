@@ -2,7 +2,6 @@ package git.jbredwards.akashic_goggles.core.transformer;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.*;
@@ -42,6 +41,7 @@ public final class Transformer implements IClassTransformer, Opcodes
         // BiblioCraft
         // ===========
         {
+            addSupport("jds/bibliocraft/items/ItemReadingGlasses <init>()V", ASMConsumer.identity());
             addMapping("jds/bibliocraft/events/EventBlockMarkerHighlight DrawBlockHighlightEvent(Lnet/minecraftforge/client/event/DrawBlockHighlightEvent;)V", builder -> {
                 // Account for Akashic Googles and Baubles slots.
                 // Old: ItemStack headArmor = event.getPlayer().inventory.armorItemInSlot(3)
@@ -108,29 +108,12 @@ public final class Transformer implements IClassTransformer, Opcodes
                     instructions.remove(insn);
                 });
             });
-            addMapping("jds/bibliocraft/items/ItemReadingGlasses <init>()V", builder -> {
-                // Add all reading glasses to list of supported items for Akashic Goggles.
-                // Old: N/A
-                // New: ASMHooks.registerGlasses(this)
-                builder.put(map("net/minecraft/item/ItemArmor <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V"), (instructions, insn) -> {
-                    instructions.insert(insn, hook("registerGlasses", "(Lnet/minecraft/item/Item;)V"));
-                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
-                });
-            });
         }
         // =======
         // Botania
         // =======
         {
-            addMapping("vazkii/botania/common/item/equipment/bauble/ItemMonocle <init>()V", builder -> {
-                // Add all monocles to list of supported items for Akashic Goggles.
-                // Old: N/A
-                // New: ASMHooks.registerGoggles(this)
-                builder.put(map("vazkii/botania/common/item/equipment/bauble/ItemBauble <init>(Ljava/lang/String;)V"), (instructions, insn) -> {
-                    instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/Item;)V"));
-                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
-                });
-            });
+            addSupport("vazkii/botania/common/item/equipment/bauble/ItemMonocle <init>()V", ASMConsumer.identity());
             addOverwrite("vazkii/botania/common/item/equipment/bauble/ItemMonocle hasMonocle(Lnet/minecraft/entity/player/EntityPlayer;)Z", adapter -> {
                 // Account for Akashic Goggles.
                 // Old: { ... }
@@ -143,15 +126,14 @@ public final class Transformer implements IClassTransformer, Opcodes
         // Embers
         // ======
         {
-            addMapping("teamroots/embers/item/ItemAshenCloak <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V", builder -> {
-                // Add all ash goggles to list of supported items for Akashic Goggles.
+            addSupport("teamroots/embers/item/ItemAshenCloak <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V",
+            addMethod("canDropInAkashic", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
+                // Only allow goggles to be dropped into Akashic Goggles.
                 // Old: N/A
-                // New: ASMHooks.registerGoggles(this)
-                builder.put(map("teamroots/embers/item/ItemArmorBase <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;Ljava/lang/String;Z)V"), (instructions, insn) -> {
-                    instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/ItemArmor;)V"));
-                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
-                });
-            });
+                // New: { return ASMHooks.isHelmet(stack) }
+                adapter.visitVarInsn(ALOAD, 2);
+                hook(adapter, "isHelmet", "(Lnet/minecraft/item/ItemStack;)Z");
+            }));
             addOverwrite("teamroots/embers/proxy/ClientProxy isGoggles(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z", adapter -> {
                 // Account for Akashic Googles and Baubles slots.
                 // Old: { ... }
@@ -161,10 +143,33 @@ public final class Transformer implements IClassTransformer, Opcodes
                 hook(adapter, "isGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z");
             });
         }
+        // =============
+        // Nature's Aura
+        // =============
+        {
+            addSupport("de/ellpeck/naturesaura/items/ItemEye <init>(Ljava/lang/String;)V", ASMConsumer.identity());
+            addMapping("de/ellpeck/naturesaura/events/ClientEvents onClientTick(Lnet/minecraftforge/fml/common/gameevent/TickEvent$ClientTickEvent;)V", builder -> {
+                // Account for Akashic Googles.
+                // Old: if (Compat.baubles)
+                // New: if (ASMHooks.getEyes(Compat.baubles))
+                builder.put(map("de/ellpeck/naturesaura/compat/Compat baubles"), (instructions, insn) -> {
+                    instructions.insert(insn, hook("getEyes", "(Z)Z"));
+                });
+            });
+        }
         // =========
         // Railcraft
         // =========
         {
+            addSupport("mods/railcraft/common/items/ItemGoggles <init>()V",
+            addMethod("compareDuringAkashicDropIn", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
+                // Allow Akashic Goggles to hold multiple railman goggles, if they have different auras.
+                // Old: N/A
+                // New: { return ASMHooks.isSameAura(stack, other) }
+                adapter.visitVarInsn(ALOAD, 2);
+                adapter.visitVarInsn(ALOAD, 3);
+                hook(adapter, "isSameAura", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z");
+            }));
             addMapping("mods/railcraft/client/render/world/GoggleAuraWorldRenderer onWorldRender(Lnet/minecraftforge/client/event/RenderWorldLastEvent;)V", builder -> {
                 // Check for specific GoggleAura, so the player may wear multiple goggles with different auras at once.
                 // Old: if (ItemGoggles.isPlayerWearing(entityPlayerSP))
@@ -224,15 +229,6 @@ public final class Transformer implements IClassTransformer, Opcodes
                     instructions.remove(insn);
                 });
             });
-            addMapping("mods/railcraft/common/items/ItemGoggles <init>()V", builder -> {
-                // Add all railman goggles to list of supported items for Akashic Goggles.
-                // Old: N/A
-                // New: ASMHooks.registerGoggles(this)
-                builder.put(map("mods/railcraft/common/items/ItemRailcraftArmor <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V"), (instructions, insn) -> {
-                    instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/ItemArmor;)V"));
-                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
-                });
-            });
             addOverwrite("mods/railcraft/common/items/ItemGoggles getGoggles(Lnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;", adapter -> {
                 // Account for Akashic Googles and Baubles slots.
                 // Old: { ... }
@@ -254,15 +250,7 @@ public final class Transformer implements IClassTransformer, Opcodes
         // Thaumcraft
         // ----------
         {
-            addMapping("thaumcraft/common/items/armor/ItemGoggles <init>()V", builder -> {
-                // Add all goggles to list of supported items for Akashic Goggles.
-                // Old: N/A
-                // New: ASMHooks.registerGoggles(this)
-                builder.put(map("net/minecraft/item/ItemArmor <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V"), (instructions, insn) -> {
-                    instructions.insert(insn, hook("registerGoggles", "(Lnet/minecraft/item/Item;)V"));
-                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
-                });
-            });
+            addSupport("thaumcraft/common/items/armor/ItemGoggles <init>()V", ASMConsumer.identity());
         }
     }
 
@@ -274,17 +262,43 @@ public final class Transformer implements IClassTransformer, Opcodes
         MAPPINGS.computeIfAbsent(mapping[0].replace('/', '.'), key -> new HashMap<>()).put(mapping[1], new HashMap<>(builder.build()));
     }
 
-    private static void addOverwrite(@Nonnull final String targetMethod, @Nonnull final Consumer<GeneratorAdapter> generator) {
-        addMapping(targetMethod, builder -> builder.put((method, insn) -> method.instructions.getFirst() == insn, ASMConsumer.method((method, insn) -> {
-            method.instructions.clear();
-            method.tryCatchBlocks.clear();
-            method.localVariables.clear();
+    @Nonnull
+    private static ASMConsumer addMethod(@Nonnull final String name, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        return ASMConsumer.advanced((classNode, unused, insn) -> {
+            @Nonnull final MethodNode method = new MethodNode(ACC_PUBLIC, name, desc, null, null);
+            classNode.methods.add(method);
 
             @Nonnull final GeneratorAdapter adapter = new GeneratorAdapter(method, method.access, method.name, method.desc);
             generator.accept(adapter);
             adapter.returnValue();
             adapter.endMethod();
-        })));
+        });
+    }
+
+    private static void addOverwrite(@Nonnull final String targetMethod, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        addMapping(targetMethod, builder -> {
+            builder.put((method, insn) -> method.instructions.getFirst() == insn,
+                    ASMConsumer.advanced((classNode, method, insn) -> {
+                method.instructions.clear();
+                method.tryCatchBlocks.clear();
+                method.localVariables.clear();
+
+                @Nonnull final GeneratorAdapter adapter = new GeneratorAdapter(method, method.access, method.name, method.desc);
+                generator.accept(adapter);
+                adapter.returnValue();
+                adapter.endMethod();
+            }));
+        });
+    }
+
+    private static void addSupport(@Nonnull final String targetMethod, @Nonnull final ASMConsumer consumer) {
+        addMapping(targetMethod, builder -> {
+            builder.put((method, insn) -> method.instructions.getFirst() == insn,
+                    ASMConsumer.advanced((classNode, method, insn) -> {
+                classNode.interfaces.add("git/jbredwards/akashic_goggles/api/IAkashicGoggles");
+                consumer.accept(classNode, method, insn);
+            }));
+        });
     }
 
     @Nullable
@@ -300,7 +314,7 @@ public final class Transformer implements IClassTransformer, Opcodes
         for(@Nonnull final MethodNode method : classNode.methods) {
             @Nullable final Map<ASMPredicate, ASMConsumer> actionMappings = methodMappings.get(method.name + method.desc);
             if(actionMappings != null) for(@Nonnull final AbstractInsnNode insn : method.instructions.toArray()) {
-                actionMappings.entrySet().stream().filter(e -> e.getKey().test(method, insn)).forEach(e -> e.getValue().acceptMethod(method, insn));
+                actionMappings.entrySet().stream().filter(e -> e.getKey().test(method, insn)).forEach(e -> e.getValue().accept(classNode, method, insn));
             }
         }
 

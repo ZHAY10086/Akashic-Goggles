@@ -6,6 +6,7 @@ import com.google.common.eventbus.Subscribe;
 import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.core.ASMHandler;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
+import git.jbredwards.akashic_goggles.mod.common.AkashicGogglesConfig;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
 import net.minecraft.client.Minecraft;
@@ -119,7 +120,8 @@ public final class AkashicGoggles extends DummyModContainer
     public void createOwnedPackages(@Nonnull final FMLConstructionEvent event) {
         ownedPackages.addAll(Arrays.asList(event.getASMHarvestedData().getCandidatesFor("git.jbredwards.akashic_goggles").stream().map(ModCandidate::getContainedPackages).flatMap(List::stream).distinct().toArray(String[]::new)));
         MinecraftForge.EVENT_BUS.register(InventoryAkashicGoggles.class);
-        MinecraftForge.EVENT_BUS.register(getClass());
+        MinecraftForge.EVENT_BUS.register(AkashicGogglesConfig.class);
+        MinecraftForge.EVENT_BUS.register(AkashicGoggles.class);
     }
 
     @SideOnly(Side.CLIENT)

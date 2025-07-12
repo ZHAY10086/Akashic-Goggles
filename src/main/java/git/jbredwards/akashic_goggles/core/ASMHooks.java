@@ -1,22 +1,23 @@
 package git.jbredwards.akashic_goggles.core;
 
 import de.ellpeck.actuallyadditions.api.misc.IGoggles;
+import de.ellpeck.naturesaura.events.ClientEvents;
+import de.ellpeck.naturesaura.items.ModItems;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
-import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import jds.bibliocraft.events.EventBlockMarkerHighlight;
 import mods.railcraft.api.items.InvToolsAPI;
 import mods.railcraft.client.core.AuraKeyHandler;
 import mods.railcraft.common.items.ItemGoggles;
 import mods.railcraft.common.items.RailcraftItems;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import teamroots.embers.api.item.IInfoGoggles;
@@ -25,6 +26,7 @@ import vazkii.botania.api.item.ICosmeticAttachable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 /**
@@ -36,10 +38,6 @@ public final class ASMHooks
 {
     public static boolean isNonEmpty(@Nonnull final ItemStack stack) {
         return !stack.isEmpty();
-    }
-
-    public static void registerGoggles(@Nonnull final Item item) {
-        InventoryAkashicGoggles.VALID_ITEMS.put(item, 0);
     }
 
     // ------------------
@@ -88,10 +86,6 @@ public final class ASMHooks
         return player != null ? AkashicGogglesUtil.findStack(player, EventBlockMarkerHighlight::canHeadArmorRead) : ItemStack.EMPTY;
     }
 
-    public static void registerGlasses(@Nonnull final Item item) {
-        for(int meta = 0; meta < 3; meta++) InventoryAkashicGoggles.VALID_ITEMS.put(item, meta);
-    }
-
     // -------
     // Botania
     // -------
@@ -121,8 +115,34 @@ public final class ASMHooks
         return stack.getItem() instanceof IInfoGoggles && ((IInfoGoggles)stack.getItem()).shouldDisplayInfo(player, stack, slot);
     }
 
-    public static void registerGoggles(@Nonnull final ItemArmor item) {
-        if(item.armorType == EntityEquipmentSlot.HEAD) registerGoggles((Item)item);
+    public static boolean isHelmet(@Nonnull final ItemStack stack) {
+        return EntityLiving.getSlotForItemStack(stack) == EntityEquipmentSlot.HEAD;
+    }
+
+    // -------------
+    // Nature's Aura
+    // -------------
+
+    @Nullable
+    private static Field heldEye, heldOcular;
+
+    @SideOnly(Side.CLIENT)
+    public static boolean getEyes(final boolean searchBaubles) {
+        @Nullable final EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+        if(player != null) {
+            if(heldEye == null) heldEye = ReflectionHelper.findField(ClientEvents.class, "heldEye");
+            if(heldOcular == null) heldOcular = ReflectionHelper.findField(ClientEvents.class, "heldOcular");
+            @Nonnull final ItemStack eye = AkashicGogglesUtil.findStack(player, stack -> stack.getItem() == ModItems.EYE);
+            @Nonnull final ItemStack ocular = AkashicGogglesUtil.findStack(player, stack -> stack.getItem() == ModItems.EYE_IMPROVED);
+            try {
+                heldEye.set(null, eye);
+                heldOcular.set(null, ocular);
+            }
+            // Unpossible?
+            catch(@Nonnull final Exception e) { throw new ReflectionHelper.UnableToAccessFieldException(e); }
+        }
+
+        return searchBaubles;
     }
 
     // ---------
@@ -141,5 +161,9 @@ public final class ASMHooks
 
     public static boolean isPlayerWearing(@Nullable final EntityPlayer player, @Nullable final ItemGoggles.GoggleAura aura) {
         return !InvToolsAPI.isEmpty(getGoggles(player, aura));
+    }
+
+    public static boolean isSameAura(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
+        return ItemStack.areItemsEqual(stack, other) && ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
     }
 }

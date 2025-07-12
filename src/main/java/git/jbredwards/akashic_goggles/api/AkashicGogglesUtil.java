@@ -2,7 +2,6 @@ package git.jbredwards.akashic_goggles.api;
 
 import baubles.api.BaublesApi;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
-import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -71,16 +70,5 @@ public enum AkashicGogglesUtil
                 // Search any Akashic Goggles if the stack is initially not found.
                 .orElseGet(() -> IntStream.range(0, inventory.getSlots()).mapToObj(inventory::getStackInSlot)
                 .flatMap(AkashicGogglesUtil::getContainedStacks).filter(filter).findFirst().orElse(ItemStack.EMPTY));
-    }
-
-    /**
-     * Registers the provided ItemStack as an item that can be placed inside Akashic Goggles.
-     * @throws NullPointerException If stack is null.
-     *
-     * @since 1.0.0
-     * @author jbred
-     */
-    public static void registerSupportedGoggles(@Nonnull final ItemStack stack) {
-        InventoryAkashicGoggles.VALID_ITEMS.put(stack.getItem(), stack.getItemDamage());
     }
 }

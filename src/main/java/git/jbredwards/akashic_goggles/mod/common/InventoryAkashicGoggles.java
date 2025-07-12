@@ -1,8 +1,7 @@
 package git.jbredwards.akashic_goggles.mod.common;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import git.jbredwards.akashic_goggles.Tags;
+import git.jbredwards.akashic_goggles.api.IAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -12,7 +11,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
@@ -40,9 +38,6 @@ import java.util.stream.IntStream;
 public class InventoryAkashicGoggles extends ItemStackHandler
 {
     @Nonnull
-    public static final Multimap<Item, Integer> VALID_ITEMS = HashMultimap.create();
-
-    @Nonnull
     public static final ResourceLocation SLOT_TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/gui/slot.png");
     public static int WIDTH = 6, HEIGHT = 2, SLOT_SIZE = 18;
 
@@ -52,10 +47,6 @@ public class InventoryAkashicGoggles extends ItemStackHandler
         super(WIDTH * HEIGHT);
         goggles = gogglesIn;
         deserializeNBT(ItemNBTHelper.getNBT(gogglesIn).getCompoundTag(ItemAkashicGoggles.NBT_KEY_INV));
-    }
-
-    public static boolean isItemValid(@Nonnull final ItemStack stack) {
-        return VALID_ITEMS.get(stack.getItem()).contains(stack.getHasSubtypes() ? stack.getItemDamage() : 0);
     }
 
     @SubscribeEvent
@@ -160,10 +151,8 @@ public class InventoryAkashicGoggles extends ItemStackHandler
 
     @Override
     public boolean isItemValid(final int slot, @Nonnull final ItemStack stack) {
-        return isItemValid(stack) && stacks.stream().noneMatch(other -> {
-            if(stack.getHasSubtypes() ? !ItemStack.areItemsEqual(stack, other) : !ItemStack.areItemsEqualIgnoreDurability(stack, other)) return false;
-            else return !CompatHandler.RAILCRAFT.test(stack) || !CompatHandler.RAILCRAFT.test(other) || ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
-        });
+        return stack.getItem() instanceof IAkashicGoggles && ((IAkashicGoggles)stack.getItem()).canDropInAkashic(goggles, stack)
+                && stacks.stream().noneMatch(other -> ((IAkashicGoggles)stack.getItem()).compareDuringAkashicDropIn(goggles, stack, other));
     }
 
     @Nonnull

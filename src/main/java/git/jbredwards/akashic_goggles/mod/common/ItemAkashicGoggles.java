@@ -4,9 +4,12 @@ import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import baubles.api.cap.BaublesCapabilities;
 import baubles.api.render.IRenderBauble;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
+import git.jbredwards.akashic_goggles.api.IAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
@@ -20,7 +23,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
@@ -32,6 +34,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -49,8 +52,7 @@ import vazkii.arl.util.TooltipHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -69,15 +71,21 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
     public ItemAkashicGoggles() {
         super("goggles");
         setCreativeTab(AkashicGoggles.TAB).setMaxStackSize(1);
-        AkashicGogglesUtil.registerSupportedGoggles(new ItemStack(Items.DIAMOND_SWORD));
     }
 
     @Nonnull
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(@Nonnull final EntityEquipmentSlot slot, @Nonnull final ItemStack goggles) {
-        @Nonnull final Multimap<String, AttributeModifier> modifiers = super.getAttributeModifiers(slot, goggles);
-        AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getItem().getAttributeModifiers(slot, stack)));
-        return modifiers;
+        @Nonnull final Multimap<String, AttributeModifier> modifiers = MultimapBuilder.hashKeys().arrayListValues().build();
+        if(AkashicGogglesConfig.applyArmorAttributes) AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getAttributeModifiers(slot)));
+        return mergeDuplicateAttributeModifiers(modifiers);
+    }
+
+    @Override
+    public void onArmorTick(@Nonnull final World world, @Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles) {
+        AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
+            if(stack.getItem() instanceof IAkashicGoggles) ((IAkashicGoggles)stack.getItem()).onAkashicTick(goggles, stack, player);
+        });
     }
 
     @SideOnly(Side.CLIENT)
@@ -201,15 +209,6 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
 
     @Optional.Method(modid = "baubles")
     @Override
-    public void onWornTick(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
-        AkashicGogglesUtil.getContainedStacks(goggles)
-                .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
-                .map(stack -> Pair.of(stack, stack.getCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null)))
-                .forEach(entry -> entry.getRight().onWornTick(entry.getLeft(), wearer));
-    }
-
-    @Optional.Method(modid = "baubles")
-    @Override
     public boolean willAutoSync(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
         return AkashicGogglesUtil.getContainedStacks(goggles)
                 .filter(stack -> stack.hasCapability(BaublesCapabilities.CAPABILITY_ITEM_BAUBLE, null))
@@ -231,12 +230,18 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
         }
     }
 
+    @Optional.Method(modid = "baubles")
+    @Override
+    public void onWornTick(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
+        AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
+            if(stack.getItem() instanceof IAkashicGoggles) ((IAkashicGoggles)stack.getItem()).onAkashicTick(goggles, stack, wearer);
+        });
+    }
+
     @Nonnull
     @Optional.Method(modid = "baubles")
     @Override
-    public BaubleType getBaubleType(@Nonnull final ItemStack goggles) {
-        return BaubleType.TRINKET; // TODO
-    }
+    public BaubleType getBaubleType(@Nonnull final ItemStack goggles) { return AkashicGogglesConfig.baubleType.get(); }
 
     // ----------------------
     // Thaumcraft Integration
@@ -254,5 +259,46 @@ public class ItemAkashicGoggles extends ItemMod implements IBauble, IRenderBaubl
     public boolean showNodes(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase player) {
         return player.getHeldItemMainhand() != goggles && player.getHeldItemOffhand() != goggles && AkashicGogglesUtil.getContainedStacks(goggles)
                 .anyMatch(stack -> stack.getItem() instanceof IRevealer && ((IRevealer)stack.getItem()).showNodes(stack, player));
+    }
+
+    // -------
+    // Utility
+    // -------
+
+    @Nonnull
+    protected static Multimap<String, AttributeModifier> mergeDuplicateAttributeModifiers(@Nonnull final Multimap<String, AttributeModifier> modifiers) {
+        @Nonnull final Multimap<String, AttributeModifier> modifiersMerged = HashMultimap.create();
+        modifiers.asMap().forEach((key, attributes) -> {
+            @Nonnull final Map<UUID, AttributeModifier[]> mergedMap = new HashMap<>();
+            attributes.forEach(attribute -> {
+                @Nonnull final AttributeModifier[] values = mergedMap.computeIfAbsent(attribute.getID(), id -> new AttributeModifier[3]);
+                if(values[attribute.getOperation()] == null) values[attribute.getOperation()] = attribute;
+                else {
+                    @Nonnull final AttributeModifier merged;
+                    switch(attribute.getOperation()) {
+                        case Constants.AttributeModifierOperation.ADD:
+                        case Constants.AttributeModifierOperation.ADD_MULTIPLE:
+                            merged = new AttributeModifier(attribute.getID(), attribute.getName(),
+                            attribute.getAmount() + values[attribute.getOperation()].getAmount(),
+                            attribute.getOperation());
+                            break;
+                        default:
+                            merged = new AttributeModifier(attribute.getID(), attribute.getName(),
+                            (attribute.getAmount() + 1) * values[attribute.getOperation()].getAmount(),
+                            attribute.getOperation());
+                    }
+
+                    values[attribute.getOperation()] = merged;
+                }
+            });
+
+            mergedMap.values().forEach(values -> {
+                for(@Nullable final AttributeModifier value : values) {
+                    if(value != null) modifiersMerged.put(key, value);
+                }
+            });
+        });
+
+        return modifiersMerged;
     }
 }
