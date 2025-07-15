@@ -1,10 +1,13 @@
 package git.jbredwards.akashic_goggles.mod.common;
 
 import baubles.api.BaubleType;
+import baubles.api.IBauble;
 import git.jbredwards.akashic_goggles.Tags;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -16,27 +19,47 @@ import javax.annotation.Nonnull;
  *
  */
 @Config(modid = Tags.MOD_ID)
+@Mod.EventBusSubscriber(modid = Tags.MOD_ID)
 public final class AkashicGogglesConfig
 {
-    @Config.LangKey("config." + Tags.MOD_ID + ".applyArmorAttributes")
-    public static boolean applyArmorAttributes = true;
-
-    @Nonnull
-    @Config.LangKey("config." + Tags.MOD_ID + ".baubleType")
-    public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.TRINKET;
-    public enum BaubleTypeAdapter
+    @Optional.Interface(modid = "baubles", iface = "baubles.api.IBauble")
+    public enum BaubleTypeAdapter implements IBauble
     {
-        AMULET, RING, BELT, TRINKET, HEAD, BODY, CHARM;
+        NONE, AMULET, RING, BELT, TRINKET, HEAD, BODY, CHARM;
 
         @Nonnull
+        @Override
         @Optional.Method(modid = "baubles")
-        public BaubleType get() { return BaubleType.values()[ordinal()]; }
+        public BaubleType getBaubleType(@Nonnull final ItemStack stack) { return BaubleType.values()[ordinal() - 1]; }
     }
 
     @Nonnull
-    @Config.LangKey("config." + Tags.MOD_ID + ".compat")
-    public static Compat compat = new Compat();
-    public static class Compat
+    @Config.LangKey("config." + Tags.MOD_ID + ".goggles")
+    public static Goggles goggles = new Goggles();
+    public static class Goggles
+    {
+        @Config.LangKey("config." + Tags.MOD_ID + ".armorAttributes")
+        public boolean armorAttributes = true;
+
+        @Nonnull
+        @Config.LangKey("config." + Tags.MOD_ID + ".baubleType")
+        public BaubleTypeAdapter baubleType = BaubleTypeAdapter.TRINKET;
+
+        @Config.SlidingOption
+        @Config.RangeInt(min = 1, max = 5)
+        @Config.LangKey("config." + Tags.MOD_ID + ".height")
+        public int height = 1;
+
+        @Config.SlidingOption
+        @Config.RangeInt(min = 1, max = 15)
+        @Config.LangKey("config." + Tags.MOD_ID + ".width")
+        public int width = 5;
+    }
+
+    @Nonnull
+    @Config.LangKey("config." + Tags.MOD_ID + ".modCompat")
+    public static ModCompat modCompat = new ModCompat();
+    public static class ModCompat
     {
         @Nonnull
         @Config.LangKey("config." + Tags.MOD_ID + ".compat.actuallyadditions")
@@ -86,6 +109,12 @@ public final class AkashicGogglesConfig
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.baubleType")
             public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+
+            @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderOverlayTexture")
+            public boolean renderOverlayTexture = true;
+
+            @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderValuablesTexture")
+            public boolean renderValuablesTexture = false;
         }
 
         @Nonnull

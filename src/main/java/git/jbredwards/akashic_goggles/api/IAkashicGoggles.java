@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
  */
 public interface IAkashicGoggles
 {
-    default boolean canDropInAkashic(@Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
+    default boolean canDropInAkashic(@Nonnull final EntityLivingBase player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
         return true;
     }
 
@@ -27,7 +27,7 @@ public interface IAkashicGoggles
      * @since 1.0.0
      * @author jbred
      */
-    default boolean compareDuringAkashicDropIn(@Nonnull final ItemStack goggles, @Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
+    default boolean compareDuringAkashicDropIn(@Nonnull final EntityLivingBase player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
         return stack.getHasSubtypes() ? ItemStack.areItemsEqual(stack, other) : ItemStack.areItemsEqualIgnoreDurability(stack, other);
     }
 
@@ -41,5 +41,5 @@ public interface IAkashicGoggles
      * @since 1.0.0
      * @author jbred
      */
-    default void onAkashicTick(@Nonnull final ItemStack goggles, @Nonnull final ItemStack stack, @Nonnull final EntityLivingBase player) {}
+    default void onAkashicTick(@Nonnull final EntityLivingBase player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {}
 }

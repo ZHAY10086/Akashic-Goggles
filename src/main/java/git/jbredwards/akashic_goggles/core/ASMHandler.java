@@ -5,7 +5,6 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.Map;
 
 /**
@@ -18,19 +17,6 @@ import java.util.Map;
 @IFMLLoadingPlugin.Name(Tags.MOD_NAME + " Plugin")
 public final class ASMHandler implements IFMLLoadingPlugin
 {
-    public static File MOD_LOCATION;
-
-    @Override
-    public void injectData(@Nonnull final Map<String, Object> data) {
-        MOD_LOCATION = (File)data.get("coremodLocation");
-    }
-
-    @Nonnull
-    @Override
-    public String getModContainerClass() {
-        return "git.jbredwards.akashic_goggles.mod.AkashicGoggles";
-    }
-
     @Nonnull
     @Override
     public String[] getASMTransformerClass() {
@@ -48,4 +34,11 @@ public final class ASMHandler implements IFMLLoadingPlugin
     @Nullable
     @Override
     public String getAccessTransformerClass() { return null; }
+
+    @Nullable
+    @Override
+    public String getModContainerClass() { return null; }
+
+    @Override
+    public void injectData(@Nonnull final Map<String, Object> data) {}
 }

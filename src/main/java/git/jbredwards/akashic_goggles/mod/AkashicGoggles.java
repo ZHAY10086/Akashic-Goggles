@@ -1,13 +1,9 @@
 package git.jbredwards.akashic_goggles.mod;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import git.jbredwards.akashic_goggles.Tags;
-import git.jbredwards.akashic_goggles.core.ASMHandler;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
-import git.jbredwards.akashic_goggles.mod.common.AkashicGogglesConfig;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -20,22 +16,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.datafix.DataFixesManager;
+import net.minecraft.util.datafix.FixTypes;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.resource.IResourceType;
 import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.client.resource.VanillaResourceType;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.client.FMLFileResourcePack;
 import net.minecraftforge.fml.common.*;
-import net.minecraftforge.fml.common.discovery.ModCandidate;
-import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.versioning.ArtifactVersion;
-import net.minecraftforge.fml.common.versioning.VersionParser;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
@@ -43,85 +36,46 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipFile;
+import java.util.Objects;
 
 /**
  *
  * @author jbred
  *
  */
-public final class AkashicGoggles extends DummyModContainer
+@Mod.EventBusSubscriber
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, useMetadata = true, dependencies =
+        "required-before:autoreglib@[1.3-32,);")
+public final class AkashicGoggles
 {
-    @Nullable public static Item GOGGLES;
-    @Nonnull public static final SoundEvent
-            ITEM_GOGGLES_EMPTY = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.empty")),
-            ITEM_GOGGLES_EQUIP = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.equip")),
-            ITEM_GOGGLES_INSERT = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.insert"));
-
-    @Nonnull public static final CreativeTabs TAB = new CreativeTabs(Tags.MOD_ID + ".tab") {
-        @Nonnull
-        @Override
-        public ItemStack createIcon() { return new ItemStack(GOGGLES); }
-    };
-
     public static boolean HAS_BAUBLES = false;
 
-    @Subscribe
-    public void preInit(@Nonnull final FMLPreInitializationEvent event) {
+    @Mod.EventHandler
+    static void preInit(@Nonnull final FMLPreInitializationEvent event) {
         if(HAS_BAUBLES = Loader.isModLoaded("baubles")) CompatHandler.preInit();
+        FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) ->
+        DataFixesManager.processItemStack(fixer, compound.getCompoundTag("tag"), versionIn, InventoryAkashicGoggles.NBT_INVENTORY));
     }
 
-    @Subscribe
+    @Mod.EventHandler
     @SideOnly(Side.CLIENT)
-    public void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
+    static void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
         if(HAS_BAUBLES) CompatHandler.postInitClient();
-        createMetadataTranslated(getMetadata());
+        createMetadataTranslated(Objects.requireNonNull(Loader.instance().activeModContainer()));
     }
 
-    // -------------------------------------
-    // Internal mod container stuffs (START)
-    // -------------------------------------
-
-    @Nonnull private final List<String> ownedPackages;
-    @Nonnull private final String creditsKey, descKey;
-
-    public AkashicGoggles() throws IOException {
-        super(createMetadata());
-        ownedPackages = new ArrayList<>();
-        creditsKey = getMetadata().credits;
-        descKey = getMetadata().description;
-
-        getMetadata().dependencies.add(VersionParser.parseVersionReference("autoreglib@[1.3-32,)"));
-        getMetadata().requiredMods.add(VersionParser.parseVersionReference("autoreglib@[1.3-32,)"));
-    }
-
-    @Nonnull
-    private static ModMetadata createMetadata() throws IOException {
-        try(@Nonnull final ZipFile jar = new ZipFile(ASMHandler.MOD_LOCATION)) {
-            return MetadataCollection.from(jar.getInputStream(jar.getEntry("mcmod.info")), jar.getName()).getMetadataForId(Tags.MOD_ID, ImmutableMap.of("name", Tags.MOD_NAME, "version", Tags.VERSION));
-        }
-    }
+    // -------------
+    // Mod container
+    // -------------
 
     @SideOnly(Side.CLIENT)
-    private void createMetadataTranslated(@Nonnull  final ModMetadata metadata) {
+    private static void createMetadataTranslated(@Nonnull final ModContainer mod) {
+        ReflectionHelper.setPrivateValue(FMLModContainer.class, (FMLModContainer)mod, ModContainer.Disableable.NEVER, "disableability");
+        @Nonnull final String creditsKey = mod.getMetadata().credits, descKey = mod.getMetadata().description;
         registerResourceListener(VanillaResourceType.LANGUAGES, manager -> {
-            metadata.credits = I18n.format(creditsKey).replace("\\n", "\n");
-            metadata.description = I18n.format(descKey);
+            mod.getMetadata().credits = I18n.format(creditsKey).replace("\\n", "\n");
+            mod.getMetadata().description = I18n.format(descKey);
         });
-    }
-
-    @Subscribe
-    public void createOwnedPackages(@Nonnull final FMLConstructionEvent event) {
-        ownedPackages.addAll(Arrays.asList(event.getASMHarvestedData().getCandidatesFor("git.jbredwards.akashic_goggles").stream().map(ModCandidate::getContainedPackages).flatMap(List::stream).distinct().toArray(String[]::new)));
-        MinecraftForge.EVENT_BUS.register(InventoryAkashicGoggles.class);
-        MinecraftForge.EVENT_BUS.register(AkashicGogglesConfig.class);
-        MinecraftForge.EVENT_BUS.register(AkashicGoggles.class);
     }
 
     @SideOnly(Side.CLIENT)
@@ -131,40 +85,25 @@ public final class AkashicGoggles extends DummyModContainer
         });
     }
 
-    @Override
-    public boolean registerBus(@Nonnull final EventBus bus, @Nonnull final LoadController controller) {
-        bus.register(this);
-        return true;
-    }
+    // ----------
+    // Registries
+    // ----------
 
-    @Nonnull
-    @Override
-    public File getSource() { return ASMHandler.MOD_LOCATION; }
+    @Nonnull public static final SoundEvent
+            ITEM_GOGGLES_EMPTY = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.empty")),
+            ITEM_GOGGLES_EQUIP = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.equip")),
+            ITEM_GOGGLES_INSERT = new SoundEvent(new ResourceLocation(Tags.MOD_ID, "item.insert"));
 
-    @Nonnull
-    @Override
-    public List<String> getOwnedPackages() { return ownedPackages; }
-
-    @Nonnull
-    @SideOnly(Side.CLIENT)
-    @Override
-    public Class<?> getCustomResourcePackClass() { return FMLFileResourcePack.class; }
-
-    @Nonnull
-    @Override
-    public List<ArtifactVersion> getDependencies() { return getMetadata().dependencies; }
-
-    @Nonnull
-    @Override
-    public Set<ArtifactVersion> getRequirements() { return getMetadata().requiredMods; }
-
-    // -----------------------------------
-    // Internal mod container stuffs (END)
-    // -----------------------------------
+    @Nullable public static Item GOGGLES;
+    @Nonnull public static final CreativeTabs TAB = new CreativeTabs(Tags.MOD_ID + ".tab") {
+        @Nonnull
+        @Override
+        public ItemStack createIcon() { return new ItemStack(GOGGLES); }
+    };
 
     @SubscribeEvent
-    static void registerItems(@Nonnull final RegistryEvent.Register<Item> event) throws ReflectiveOperationException {
-        GOGGLES = (Item)Class.forName("git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles").newInstance();
+    static void registerItems(@Nonnull final RegistryEvent.Register<Item> event) {
+        GOGGLES = new ItemAkashicGoggles();
     }
 
     @SideOnly(Side.CLIENT)

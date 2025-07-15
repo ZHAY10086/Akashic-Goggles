@@ -17,6 +17,8 @@ import java.util.function.BiConsumer;
 @FunctionalInterface
 public interface ASMConsumer extends BiConsumer<InsnList, AbstractInsnNode>
 {
+    @Override
+    void accept(@Nonnull final InsnList instructions, @Nonnull final AbstractInsnNode insn);
     default void accept(@Nonnull final ClassNode classNode, @Nonnull final MethodNode method, @Nonnull final AbstractInsnNode insn) {
         accept(method.instructions, insn);
     }
@@ -30,7 +32,7 @@ public interface ASMConsumer extends BiConsumer<InsnList, AbstractInsnNode>
             }
 
             @Override
-            public void accept(@Nonnull final InsnList instructions, AbstractInsnNode insn) {
+            public void accept(@Nonnull final InsnList instructions, @Nonnull final AbstractInsnNode insn) {
                 throw new UnsupportedOperationException("Call ASMConsumer.accept(classNode, method, insn) instead.");
             }
         };

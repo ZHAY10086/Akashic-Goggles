@@ -3,23 +3,36 @@ package git.jbredwards.akashic_goggles.core;
 import de.ellpeck.actuallyadditions.api.misc.IGoggles;
 import de.ellpeck.naturesaura.events.ClientEvents;
 import de.ellpeck.naturesaura.items.ModItems;
+import erebus.items.ItemCompoundGoggles;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
+import git.jbredwards.akashic_goggles.mod.common.AkashicGogglesConfig;
 import jds.bibliocraft.events.EventBlockMarkerHighlight;
-import mods.railcraft.api.items.InvToolsAPI;
+import micdoodle8.mods.galacticraft.api.item.ISensorGlassesArmor;
+import micdoodle8.mods.galacticraft.api.vector.BlockVec3;
+import micdoodle8.mods.galacticraft.core.client.gui.overlay.OverlaySensorGlasses;
 import mods.railcraft.client.core.AuraKeyHandler;
 import mods.railcraft.common.items.ItemGoggles;
 import mods.railcraft.common.items.RailcraftItems;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 import teamroots.embers.api.item.IInfoGoggles;
 import vazkii.botania.api.item.IBurstViewerBauble;
 import vazkii.botania.api.item.ICosmeticAttachable;
@@ -49,8 +62,10 @@ public final class ASMHooks
     }
 
     @Nonnull
-    public static ItemStack getWearing(@Nonnull final EntityPlayer player) {
-        return AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof IGoggles && ((IGoggles)stack.getItem()).displaySpectralMobs());
+    @SideOnly(Side.CLIENT)
+    public static Object getWearing(@Nonnull final EntityPlayer player) {
+        @Nonnull final ItemStack wearing = AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof IGoggles && ((IGoggles)stack.getItem()).displaySpectralMobs());
+        return wearing.isEmpty() ? AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof IGoggles) : wearing;
     }
 
     // ----------
@@ -115,8 +130,63 @@ public final class ASMHooks
         return stack.getItem() instanceof IInfoGoggles && ((IInfoGoggles)stack.getItem()).shouldDisplayInfo(player, stack, slot);
     }
 
-    public static boolean isHelmet(@Nonnull final ItemStack stack) {
-        return EntityLiving.getSlotForItemStack(stack) == EntityEquipmentSlot.HEAD;
+    public static boolean isHelmet(@Nonnull final ItemArmor item) {
+        return item.armorType == EntityEquipmentSlot.HEAD;
+    }
+
+    // ------
+    // Erebus
+    // ------
+
+    public static boolean isWearingGoggles(@Nullable final EntityPlayer player) {
+        return player != null && !AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ItemCompoundGoggles).isEmpty();
+    }
+
+    // ------------
+    // Galacticraft
+    // ------------
+
+    @SideOnly(Side.CLIENT)
+    public static boolean overrideMobTexture() {
+        @Nullable final EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+        return player != null && !AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ISensorGlassesArmor).isEmpty();
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void renderSensorGlassesMain(@Nonnull final ItemStack stack, @Nonnull final EntityPlayer player, @Nonnull final ScaledResolution resolution, final float partialTicks) {
+        if(AkashicGogglesConfig.modCompat.galacticraft.renderOverlayTexture) OverlaySensorGlasses.renderSensorGlassesMain(stack, player, resolution, partialTicks);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void renderValuablesTexture(final double x, final double y, final double z, final double width, final double height, @Nonnull final BlockVec3 coords) {
+        if(AkashicGogglesConfig.modCompat.galacticraft.renderValuablesTexture) {
+            @Nonnull final World world = Minecraft.getMinecraft().world;
+            @Nullable final IBlockState state = coords.getBlockState(world);
+
+            if(state != null) {
+                @Nonnull final TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state).getParticleTexture();
+                if(sprite != Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite()) {
+                    Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+
+                    drawCentered(x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV());
+                    return;
+                }
+            }
+        }
+
+        drawCentered(x, y, z, width, height, 0, 1, 0, 1);
+    }
+
+    // Utility function.
+    @SideOnly(Side.CLIENT)
+    private static void drawCentered(final double x, final double y, final double z, final double width, final double height,
+                                     final double minU, final double maxU, final double minV, final double maxV) {
+        Tessellator.getInstance().getBuffer().begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        Tessellator.getInstance().getBuffer().pos(x - width * 0.5, y + height * 0.5, z).tex(minU, maxV).endVertex();
+        Tessellator.getInstance().getBuffer().pos(x + width * 0.5, y + height * 0.5, z).tex(maxU, maxV).endVertex();
+        Tessellator.getInstance().getBuffer().pos(x + width * 0.5, y - height * 0.5, z).tex(maxU, minV).endVertex();
+        Tessellator.getInstance().getBuffer().pos(x - width * 0.5, y - height * 0.5, z).tex(minU, minV).endVertex();
+        Tessellator.getInstance().draw();
     }
 
     // -------------
@@ -145,14 +215,19 @@ public final class ASMHooks
         return searchBaubles;
     }
 
+    // ----------
+    // OpenBlocks
+    // ----------
+
+
+
     // ---------
     // Railcraft
     // ---------
 
-    @Nullable
+    @Nonnull
     public static ItemStack getGoggles(@Nullable final EntityPlayer player, @Nullable final ItemGoggles.GoggleAura aura) {
-        return player == null ? null : AkashicGogglesUtil.findStack(player, stack
-                -> stack.getItem() instanceof ItemGoggles && (aura == null || aura == ItemGoggles.getCurrentAura(stack)));
+        return player == null ? ItemStack.EMPTY : AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ItemGoggles && (aura == null || aura == ItemGoggles.getCurrentAura(stack)));
     }
 
     public static boolean isGoggleAuraActive(@Nonnull final ItemGoggles.GoggleAura aura) {
@@ -160,7 +235,7 @@ public final class ASMHooks
     }
 
     public static boolean isPlayerWearing(@Nullable final EntityPlayer player, @Nullable final ItemGoggles.GoggleAura aura) {
-        return !InvToolsAPI.isEmpty(getGoggles(player, aura));
+        return !getGoggles(player, aura).isEmpty();
     }
 
     public static boolean isSameAura(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {

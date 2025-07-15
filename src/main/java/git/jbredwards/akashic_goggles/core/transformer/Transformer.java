@@ -23,6 +23,31 @@ public final class Transformer implements IClassTransformer, Opcodes
     @Nonnull
     public static final Map<String, Map<String, Map<ASMPredicate, ASMConsumer>>> MAPPINGS = new HashMap<>();
     static {
+        // ==================
+        // Actually Additions
+        // ==================
+        {
+            addSupport("de/ellpeck/actuallyadditions/mod/items/ItemEngineerGoggles <init>(Ljava/lang/String;Z)V", ASMConsumer.identity());
+            addOverwrite("de/ellpeck/actuallyadditions/mod/items/ItemEngineerGoggles isWearing(Lnet/minecraft/entity/player/EntityPlayer;)Z", adapter -> {
+                // Account for Akashic Googles and Baubles slots.
+                // Old: { ... }
+                // New: { return ASMHooks.isWearing(player) }
+                adapter.visitVarInsn(ALOAD, 0);
+                hook(adapter, "isWearing", "(Lnet/minecraft/entity/player/EntityPlayer;)Z");
+            });
+            addMapping("de/ellpeck/actuallyadditions/mod/items/ItemEngineerGoggles onClientTick(Lnet/minecraftforge/fml/common/gameevent/TickEvent$ClientTickEvent;)V", builder -> {
+                // Account for Akashic Googles and Baubles slots.
+                // Old: ItemStack face = (ItemStack)player.field_71071_by.field_70460_b.get(3)
+                // New: ItemStack face = (ItemStack)ASMHooks.getWearing(player)
+                builder.put(map("net/minecraft/util/NonNullList get(I)Ljava/lang/Object;"), (instructions, insn) -> {
+                    instructions.insert(insn, hook("getWearing", "(Lnet/minecraft/entity/player/EntityPlayer;)Ljava/lang/Object;"));
+                    instructions.remove(insn.getPrevious());
+                    instructions.remove(insn.getPrevious());
+                    instructions.remove(insn.getPrevious());
+                    instructions.remove(insn);
+                });
+            });
+        }
         // ==========
         // AutoRegLib
         // ==========
@@ -127,12 +152,12 @@ public final class Transformer implements IClassTransformer, Opcodes
         // ======
         {
             addSupport("teamroots/embers/item/ItemAshenCloak <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;ILnet/minecraft/inventory/EntityEquipmentSlot;)V",
-            addMethod("canDropInAkashic", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
+            addMethod("canDropInAkashic", "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
                 // Only allow goggles to be dropped into Akashic Goggles.
                 // Old: N/A
-                // New: { return ASMHooks.isHelmet(stack) }
-                adapter.visitVarInsn(ALOAD, 2);
-                hook(adapter, "isHelmet", "(Lnet/minecraft/item/ItemStack;)Z");
+                // New: { return ASMHooks.isHelmet(this) }
+                adapter.visitVarInsn(ALOAD, 0);
+                hook(adapter, "isHelmet", "(Lnet/minecraft/item/ItemArmor;)Z");
             }));
             addOverwrite("teamroots/embers/proxy/ClientProxy isGoggles(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z", adapter -> {
                 // Account for Akashic Googles and Baubles slots.
@@ -141,6 +166,68 @@ public final class Transformer implements IClassTransformer, Opcodes
                 adapter.visitVarInsn(ALOAD, 1);
                 adapter.visitVarInsn(ALOAD, 2);
                 hook(adapter, "isGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/EntityEquipmentSlot;)Z");
+            });
+        }
+        // ======
+        // Erebus
+        // ======
+        {
+            addSupport("erebus/items/ItemCompoundGoggles <init>(Lnet/minecraft/item/ItemArmor$ArmorMaterial;Lnet/minecraft/inventory/EntityEquipmentSlot;)V", ASMConsumer.identity());
+            addOverwrite("erebus/core.handler/GogglesClientTickHandler isWearingGoggles(Lnet/minecraft/entity/player/EntityPlayer;)Z", adapter -> {
+                // Account for Akashic Googles and Baubles slots.
+                // Old: { ... }
+                // New: { return ASMHooks.isWearingGoggles(player) }
+                adapter.visitVarInsn(ALOAD, 1);
+                hook(adapter, "isWearingGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;)Z");
+            });
+        }
+        // ============
+        // Galacticraft
+        // ============
+        {
+            addSupport("micdoodle8/mods/galacticraft/core/items/ItemSensorGlasses <init>(Ljava/lang/String;)V", ASMConsumer.identity());
+            addMapping("micdoodle8/mods/galacticraft/core/items/ItemSensorGlasses renderHelmetOverlay(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/client/gui/ScaledResolution;F)V", builder -> {
+                // Add new config setting to toggle the main overlay texture.
+                // Old: OverlaySensorGlasses.renderSensorGlassesMain(stack, player, resolution, partialTicks)
+                // New: ASMHooks.renderSensorGlassesMain(stack, player, resolution, partialTicks)
+                builder.put(map("micdoodle8/mods/galacticraft/core/client/gui/overlay/OverlaySensorGlasses renderSensorGlassesMain(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/client/gui/ScaledResolution;F)V"), (instructions, insn) -> {
+                    instructions.insert(insn, hook("renderSensorGlassesMain", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/client/gui/ScaledResolution;F)V"));
+                    instructions.remove(insn);
+                });
+            });
+            addMapping("micdoodle8/mods/galacticraft/core/client/gui/overlay/OverlaySensorGlasses renderSensorGlassesValueableBlocks(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/client/gui/ScaledResolution;F)V", builder -> {
+                // Add new config setting to render block textures.
+                // Old: Overlay.drawCenteringRectangle((var6 / 2), (var7 / 2), 1.0D, 8.0D, 8.0D)
+                // New: ASMHooks.renderValuablesTexture((var6 / 2), (var7 / 2), 1.0D, 8.0D, 8.0D, coords)
+                builder.put(map("micdoodle8/mods/galacticraft/core/client/gui/overlay/Overlay drawCenteringRectangle(DDDDD)V"), ASMConsumer.advanced((classNode, method, insn) -> {
+                    method.instructions.insert(insn, hook("renderValuablesTexture", "(DDDDDLmicdoodle8/mods/galacticraft/api/vector/BlockVec3;)V"));
+                    method.instructions.insert(insn, var(method, ALOAD, "coords"));
+                    method.instructions.remove(insn);
+                }));
+            });
+            addOverwrite("micdoodle8/mods/galacticraft/core/client/gui/overlay/OverlaySensorGlasses overrideMobTexture()Z", adapter -> {
+                // Account for Akashic Googles and Baubles slots.
+                // Old: { ... }
+                // New: { return ASMHooks.overrideMobTexture() }
+                hook(adapter, "overrideMobTexture", "()Z");
+            });
+            addMapping("micdoodle8/mods/galacticraft/core/tick/TickHandlerClient onClientTick(Lnet/minecraftforge/fml/common/gameevent/TickEvent$ClientTickEvent;)V", builder -> {
+                // No longer needed.
+                // Old: !player.inventory.armorItemInSlot(3).isEmpty()
+                // New: !false
+                builder.put(map("net/minecraft/item/ItemStack %s()Z", "isEmpty", "func_190926_b"), (instructions, insn) -> {
+                    for(int i = 0; i < 4; i++) instructions.remove(insn.getPrevious());
+                    instructions.insert(insn, new InsnNode(ICONST_0));
+                    instructions.remove(insn);
+                });
+                // Account for Akashic Googles and Baubles slots.
+                // Old: player.inventory.armorItemInSlot(3).getItem() instanceof ISensorGlassesArmor
+                // New: ASMHooks.overrideMobTexture()
+                builder.put((method, insn) -> insn instanceof TypeInsnNode && ((TypeInsnNode)insn).desc.equals("micdoodle8/mods/galacticraft/api/item/ISensorGlassesArmor"), (instructions, insn) -> {
+                    for(int i = 0; i < 5; i++) instructions.remove(insn.getPrevious());
+                    instructions.insert(insn, hook("overrideMobTexture", "()Z"));
+                    instructions.remove(insn);
+                });
             });
         }
         // =============
@@ -157,17 +244,28 @@ public final class Transformer implements IClassTransformer, Opcodes
                 });
             });
         }
+        // ==========
+        // OpenBlocks
+        // ==========
+        {
+            addSupport("openblocks/common/item/ItemImaginationGlasses <init>(Lopenblocks/common/item/ItemImaginationGlasses$Type;)V", ASMConsumer.identity());
+            addMapping("openblocks/common/tileentity/TileEntityImaginary is(Lopenblocks/common/tileentity/TileEntityImaginary$Property;Lnet/minecraft/entity/player/EntityPlayer;)Z", builder -> {
+                builder.put(map(), (instructions, insn) -> {
+
+                });
+            });
+        }
         // =========
         // Railcraft
         // =========
         {
             addSupport("mods/railcraft/common/items/ItemGoggles <init>()V",
-            addMethod("compareDuringAkashicDropIn", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
+            addMethod("compareDuringAkashicDropIn", "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
                 // Allow Akashic Goggles to hold multiple railman goggles, if they have different auras.
                 // Old: N/A
                 // New: { return ASMHooks.isSameAura(stack, other) }
-                adapter.visitVarInsn(ALOAD, 2);
                 adapter.visitVarInsn(ALOAD, 3);
+                adapter.visitVarInsn(ALOAD, 4);
                 hook(adapter, "isSameAura", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z");
             }));
             addMapping("mods/railcraft/client/render/world/GoggleAuraWorldRenderer onWorldRender(Lnet/minecraftforge/client/event/RenderWorldLastEvent;)V", builder -> {
@@ -246,9 +344,15 @@ public final class Transformer implements IClassTransformer, Opcodes
                 hook(adapter, "isPlayerWearing", "(Lnet/minecraft/entity/player/EntityPlayer;Lmods/railcraft/common/items/ItemGoggles$GoggleAura;)Z");
             });
         }
-        // ----------
+        // =================
+        // Simply Jetpacks 2
+        // =================
+        {
+            addSupport("tonius/simplyjetpacks/item/ItemPilotGoggles <init>(Ljava/lang/String;)V", ASMConsumer.identity());
+        }
+        // ==========
         // Thaumcraft
-        // ----------
+        // ==========
         {
             addSupport("thaumcraft/common/items/armor/ItemGoggles <init>()V", ASMConsumer.identity());
         }
@@ -311,7 +415,7 @@ public final class Transformer implements IClassTransformer, Opcodes
 
         @Nonnull final ClassNode classNode = new ClassNode();
         new ClassReader(basicClass).accept(classNode, 0);
-        for(@Nonnull final MethodNode method : classNode.methods) {
+        for(@Nonnull final MethodNode method : classNode.methods.toArray(new MethodNode[0])) {
             @Nullable final Map<ASMPredicate, ASMConsumer> actionMappings = methodMappings.get(method.name + method.desc);
             if(actionMappings != null) for(@Nonnull final AbstractInsnNode insn : method.instructions.toArray()) {
                 actionMappings.entrySet().stream().filter(e -> e.getKey().test(method, insn)).forEach(e -> e.getValue().accept(classNode, method, insn));
@@ -371,5 +475,10 @@ public final class Transformer implements IClassTransformer, Opcodes
     @Nonnull
     private static String obfuscate(@Nonnull final String deobfName, @Nonnull final String obfName) {
         return /*FMLLaunchHandler.isDeobfuscatedEnvironment() ? deobfName :*/ obfName;
+    }
+
+    @Nonnull
+    private static VarInsnNode var(@Nonnull final MethodNode method, final int opcode, @Nonnull final String var) {
+        return new VarInsnNode(opcode, method.localVariables.stream().filter(local -> local.name.equals(var)).mapToInt(local -> local.index).findFirst().orElseThrow(RuntimeException::new));
     }
 }

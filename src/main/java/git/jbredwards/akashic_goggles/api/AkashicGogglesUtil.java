@@ -2,12 +2,15 @@ package git.jbredwards.akashic_goggles.api;
 
 import baubles.api.BaublesApi;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import vazkii.arl.util.ItemNBTHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,9 +31,8 @@ public enum AkashicGogglesUtil
     @Nonnull
     public static Stream<ItemStack> getContainedStacks(@Nonnull final ItemStack stack) {
         if(!(stack.getItem() instanceof ItemAkashicGoggles)) return Stream.empty();
-
-        @Nullable final IItemHandler inventory = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-        return inventory != null ? IntStream.range(0, inventory.getSlots()).mapToObj(inventory::getStackInSlot) : Stream.empty();
+        @Nullable final NBTTagList inventory = ItemNBTHelper.getList(stack, InventoryAkashicGoggles.NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, true);
+        return inventory == null ? Stream.empty() : IntStream.range(0, inventory.tagCount()).mapToObj(slot -> new ItemStack(inventory.getCompoundTagAt(slot)));
     }
 
     /**
