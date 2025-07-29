@@ -33,9 +33,9 @@ public interface IAkashicGoggles
 
     /**
      *
+     * @param player
      * @param goggles
      * @param stack
-     * @param player
      *
      * @throws NullPointerException If any parameters are null.
      * @since 1.0.0

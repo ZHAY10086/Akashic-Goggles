@@ -48,11 +48,11 @@ import java.util.Objects;
         "required-before:autoreglib@[1.3-32,);")
 public final class AkashicGoggles
 {
-    public static boolean HAS_BAUBLES = false;
+    public static final boolean HAS_BAUBLES = Loader.isModLoaded("baubles");
 
     @Mod.EventHandler
     static void preInit(@Nonnull final FMLPreInitializationEvent event) {
-        if(HAS_BAUBLES = Loader.isModLoaded("baubles")) CompatHandler.preInit();
+        if(HAS_BAUBLES) CompatHandler.preInit();
         FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) ->
         DataFixesManager.processItemStack(fixer, compound.getCompoundTag("tag"), versionIn, InventoryAkashicGoggles.NBT_INVENTORY));
     }

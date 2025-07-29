@@ -32,6 +32,11 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import openblocks.common.item.ItemImaginationGlasses;
+import openblocks.common.item.ItemSonicGlasses;
+import openblocks.common.tileentity.TileEntityImaginary;
+import org.cyclops.evilcraft.entity.monster.VengeanceSpirit;
+import org.cyclops.evilcraft.item.SpectralGlasses;
 import org.lwjgl.opengl.GL11;
 import teamroots.embers.api.item.IInfoGoggles;
 import vazkii.botania.api.item.IBurstViewerBauble;
@@ -142,6 +147,16 @@ public final class ASMHooks
         return player != null && !AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ItemCompoundGoggles).isEmpty();
     }
 
+    // ---------
+    // EvilCraft
+    // ---------
+
+    @SideOnly(Side.CLIENT)
+    public static boolean isWearingGlasses(@Nonnull final VengeanceSpirit spirit) {
+        @Nullable final EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+        return spirit.isEnabledVengeance(player) || player != null && !AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof SpectralGlasses).isEmpty();
+    }
+
     // ------------
     // Galacticraft
     // ------------
@@ -219,7 +234,20 @@ public final class ASMHooks
     // OpenBlocks
     // ----------
 
+    @Nonnull
+    public static ItemStack getImaginaryGlasses(@Nonnull final EntityPlayer player, @Nonnull final TileEntityImaginary tile, @Nonnull final TileEntityImaginary.Property what) {
+        return AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ItemImaginationGlasses && ((ItemImaginationGlasses)stack.getItem()).checkBlock(what, stack, tile));
+    }
 
+    @Nonnull
+    public static ItemStack getSonicGlasses(@Nonnull final EntityPlayer player) {
+        return AkashicGogglesUtil.findStack(player, stack -> stack.getItem() instanceof ItemSonicGlasses);
+    }
+
+    public static boolean isSameColor(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
+        return ItemStack.areItemsEqualIgnoreDurability(stack, other) && (!AkashicGogglesConfig.modCompat.openblocks.stackCrayonGlasses
+                || ItemImaginationGlasses.getGlassesColor(stack) == ItemImaginationGlasses.getGlassesColor(other));
+    }
 
     // ---------
     // Railcraft
@@ -239,6 +267,6 @@ public final class ASMHooks
     }
 
     public static boolean isSameAura(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
-        return ItemStack.areItemsEqual(stack, other) && ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
+        return ItemStack.areItemsEqualIgnoreDurability(stack, other) && ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
     }
 }

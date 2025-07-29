@@ -39,7 +39,7 @@ public final class AkashicGogglesConfig
     public static class Goggles
     {
         @Config.LangKey("config." + Tags.MOD_ID + ".armorAttributes")
-        public boolean armorAttributes = true;
+        public boolean armorAttributes = false;
 
         @Nonnull
         @Config.LangKey("config." + Tags.MOD_ID + ".baubleType")
@@ -102,6 +102,16 @@ public final class AkashicGogglesConfig
         }
 
         @Nonnull
+        @Config.LangKey("config." + Tags.MOD_ID + ".compat.erebus")
+        public EvilCraft evilcraft = new EvilCraft();
+        public static class EvilCraft
+        {
+            @Nonnull
+            @Config.LangKey("config." + Tags.MOD_ID + "compat.evilcraft.baubleType")
+            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+        }
+
+        @Nonnull
         @Config.LangKey("config." + Tags.MOD_ID + ".compat.galacticraft")
         public Galacticraft galacticraft = new Galacticraft();
         public static class Galacticraft
@@ -125,6 +135,9 @@ public final class AkashicGogglesConfig
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.baubleType")
             public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+
+            @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.stackCrayonGlasses")
+            public boolean stackCrayonGlasses = false;
         }
 
         @Nonnull

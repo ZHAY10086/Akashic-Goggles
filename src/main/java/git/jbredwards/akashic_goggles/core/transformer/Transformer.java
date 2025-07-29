@@ -181,6 +181,19 @@ public final class Transformer implements IClassTransformer, Opcodes
                 hook(adapter, "isWearingGoggles", "(Lnet/minecraft/entity/player/EntityPlayer;)Z");
             });
         }
+        // =========
+        // EvilCraft
+        // =========
+        {
+            addSupport("org/cyclops/evilcraft/item/SpectralGlasses <init>(Lorg/cyclops/cyclopscore/config/extendedconfig/ExtendedConfig;)V", ASMConsumer.identity());
+            addOverwrite("org/cyclops/evilcraft/entity/monster/VengeanceSpirit isClientVisible()Z", adapter -> {
+                // Account for Akashic Goggles and Baubles slots.
+                // Old: { ... }
+                // New: { return ASMHooks.isWearingGlasses(this) }
+                adapter.loadThis();
+                hook(adapter, "isWearingGlasses", "(Lorg/cyclops/evilcraft/entity/monster/VengeanceSpirit;)Z");
+            });
+        }
         // ============
         // Galacticraft
         // ============
@@ -249,9 +262,36 @@ public final class Transformer implements IClassTransformer, Opcodes
         // ==========
         {
             addSupport("openblocks/common/item/ItemImaginationGlasses <init>(Lopenblocks/common/item/ItemImaginationGlasses$Type;)V", ASMConsumer.identity());
+            addSupport("openblocks/common/item/ItemImaginationGlasses$ItemCrayonGlasses <init>()V",
+            addMethod("compareDuringAkashicDropIn", "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z", adapter -> {
+                // Allow Akashic Goggles to hold multiple crayon glasses, if they have different colors.
+                // Old: N/A
+                // New: { return ASMHooks.isSameColor(stack, other) }
+                adapter.visitVarInsn(ALOAD, 3);
+                adapter.visitVarInsn(ALOAD, 4);
+                hook(adapter, "isSameColor", "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z");
+            }));
             addMapping("openblocks/common/tileentity/TileEntityImaginary is(Lopenblocks/common/tileentity/TileEntityImaginary$Property;Lnet/minecraft/entity/player/EntityPlayer;)Z", builder -> {
-                builder.put(map(), (instructions, insn) -> {
-
+                // Account for Akashic Googles and Baubles slots.
+                // Old: ItemStack helmet = player.getItemStackFromSlot(EntityEquipmentSlot.HEAD)
+                // New: ItemStack helmet = ASMHooks.getImaginaryGlasses(player, this, what)
+                builder.put(map("net/minecraft/entity/player/EntityPlayer %s(Lnet/minecraft/inventory/EntityEquipmentSlot;)Lnet/minecraft/item/ItemStack;", "getItemStackFromSlot", "func_184582_a"), (instructions, insn) -> {
+                    instructions.insert(insn, hook("getImaginaryGlasses", "(Lnet/minecraft/entity/player/EntityPlayer;Lopenblocks/common/tileentity/TileEntityImaginary;Lopenblocks/common/tileentity/TileEntityImaginary$Property;)Lnet/minecraft/item/ItemStack;"));
+                    instructions.insert(insn, new VarInsnNode(ALOAD, 1));
+                    instructions.insert(insn, new VarInsnNode(ALOAD, 0));
+                    instructions.remove(insn.getPrevious());
+                    instructions.remove(insn);
+                });
+            });
+            addSupport("openblocks/common/item/ItemSonicGlasses <init>()V", ASMConsumer.identity());
+            addMapping("openblocks/client/SoundEventsManager isEntityWearingGlasses(Lnet/minecraft/entity/Entity;)Z", builder -> {
+                // Account for Akashic Googles and Baubles slots.
+                // Old: ItemStack helmet = ((EntityPlayer)e).getItemStackFromSlot(EntityEquipmentSlot.HEAD)
+                // New: ItemStack helmet = ASMHooks.getSonicGlasses((EntityPlayer)e)
+                builder.put(map("net/minecraft/entity/player/EntityPlayer %s(Lnet/minecraft/inventory/EntityEquipmentSlot;)Lnet/minecraft/item/ItemStack;", "getItemStackFromSlot", "func_184582_a"), (instructions, insn) -> {
+                    instructions.insert(insn, hook("getSonicGlasses", "(Lnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;"));
+                    instructions.remove(insn.getPrevious());
+                    instructions.remove(insn);
                 });
             });
         }

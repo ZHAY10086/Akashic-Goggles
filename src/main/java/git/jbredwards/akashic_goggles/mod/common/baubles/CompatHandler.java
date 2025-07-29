@@ -46,6 +46,7 @@ public enum CompatHandler
     BIBLIOCRAFT("bibliocraft", () -> AkashicGogglesConfig.modCompat.bibliocraft.baubleType),
     EMBERS("embers", () -> AkashicGogglesConfig.modCompat.embers.baubleType),
     EREBUS("erebus", () -> AkashicGogglesConfig.modCompat.erebus.baubleType),
+    EVILCRAFT("evilcraft", () -> AkashicGogglesConfig.modCompat.evilcraft.baubleType),
     GALACTICRAFT("galacticraftcore", () -> AkashicGogglesConfig.modCompat.galacticraft.baubleType),
     OPENBLOCKS("openblocks", () -> AkashicGogglesConfig.modCompat.openblocks.baubleType),
     RAILCRAFT("railcraft", () -> AkashicGogglesConfig.modCompat.railcraft.baubleType),
