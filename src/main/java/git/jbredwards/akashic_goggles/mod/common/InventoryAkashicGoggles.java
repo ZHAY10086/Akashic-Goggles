@@ -98,8 +98,8 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @Nonnull
     public static final ResourceLocation SLOT_TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/gui/slot.png");
     public static int SLOT_SIZE = 18;
-    public static int height() { return AkashicGogglesConfig.goggles.height; }
-    public static int width() { return AkashicGogglesConfig.goggles.width; }
+    public static int height() { return AkashicGogglesConfig.Goggles.height; }
+    public static int width() { return AkashicGogglesConfig.Goggles.width; }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)

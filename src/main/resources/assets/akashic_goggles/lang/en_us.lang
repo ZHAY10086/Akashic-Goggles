@@ -2,5 +2,51 @@ item.akashic_goggles:goggles.name=Akashic Goggles
 item.akashic_goggles:goggles.tooltip=The Goggles of Goggles. Wear many different pieces of world-revealing eyewear at once.
 itemGroup.akashic_goggles.tab=Akashic Goggles
 
-mod.akashic_goggles.credits=
+mod.akashic_goggles.credits=\n- jbredwards: creator and maintainer\n- CleanroomMC: created TemplateDevEnv
 mod.akashic_goggles.description=Adds the Goggles of Goggles, allowing you to wear many different pieces of world-revealing eyewear at once!
+
+# ------
+# Config
+# ------
+
+akashic_goggles/akashic_goggles=Akashic Goggles Item
+akashic_goggles/akashic_goggles.tooltip=Config settings for the Akashic Goggles item.
+config.akashic_goggles.modCompat=Mod Compatibility
+config.akashic_goggles.modCompat.tooltip=Config settings for builtin Akashic Goggles mod support.
+
+config.akashic_goggles.armorAttributes=Apply Nested Armor Attributes
+config.akashic_goggles.armorAttributes.tooltip=While wearing Akashic Goggles that are holding items with armor attributes, those attributes should be applied to the wearer.
+config.akashic_goggles.baubleType=Bauble Type
+config.akashic_goggles.baubleType.tooltip=The Bauble type for Akashic Goggles.
+config.akashic_goggles.height=Tooltip GUI Height
+config.akashic_goggles.height.tooltip=The minimum amount of slot rows that should render in the Akashic Goggles gui tooltip.
+config.akashic_goggles.width=Tooltip GUI Width
+config.akashic_goggles.width.tooltip=The amount of slot columns that should render in the Akashic Goggles gui tooltip.
+
+akashic_goggles/compat/actuallyadditions=Actually Additions
+akashic_goggles/compat/actuallyadditions.tooltip=Akashic Goggles mod compatibility settings for Actually Additions.
+config.akashic_goggles.compat.actuallyadditions.baubleType=Bauble Type
+config.akashic_goggles.compat.actuallyadditions.baubleType.tooltip=The Bauble type for Engineer's Goggles.
+
+akashic_goggles/compat/bibliocraft=BiblioCraft
+akashic_goggles/compat/bibliocraft.tooltip=Akashic Goggles mod compatibility settings for BiblioCraft.
+config.akashic_goggles.compat.bibliocraft.baubleType=Bauble Type
+config.akashic_goggles.compat.bibliocraft.baubleType.tooltip=The Bauble type for Reading Glasses.
+
+akashic_goggles/compat/embers=Embers
+akashic_goggles/compat/embers.tooltip=Akashic Goggles mod compatibility settings for Embers.
+config.akashic_goggles.compat.embers.baubleType=Bauble Type
+config.akashic_goggles.compat.embers.baubleType.tooltip=The Bauble type for Ashen Glasses.
+
+akashic_goggles/compat/erebus=Erebus
+
+akashic_goggles/compat/evilcraft=EvilCraft
+
+akashic_goggles/compat/galacticraft=Galacticraft
+config.akashic_goggles.compat.galacticraft.renderOverlayTexture=Render Overlay Texture
+
+akashic_goggles/compat/openblocks=OpenBlocks
+
+akashic_goggles/compat/railcraft=Railcraft
+
+akashic_goggles/compat/simplyjetpacks=Simply Jetpacks

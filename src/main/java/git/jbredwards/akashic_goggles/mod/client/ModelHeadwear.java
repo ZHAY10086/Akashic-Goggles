@@ -45,8 +45,13 @@ public class ModelHeadwear implements IModel
     @Nonnull
     @Override
     public IBakedModel bake(@Nonnull final IModelState state, @Nonnull final VertexFormat format, @Nonnull final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-        return new Baked(ModelLoaderRegistry.getModelOrLogError(baseLocation, "Couldn't load ModelHeadwear dependency: " + baseLocation).bake(new ModelStateComposition(state, getDefaultState()), format, bakedTextureGetter),
-                         ModelLoaderRegistry.getModelOrLogError(headLocation, "Couldn't load ModelHeadwear dependency: " + headLocation).bake(new ModelStateComposition(state, getDefaultState()), format, bakedTextureGetter));
+        return new Baked(bakePart(baseLocation, state, format, bakedTextureGetter), bakePart(headLocation, state, format, bakedTextureGetter));
+    }
+
+    @Nonnull
+    protected static IBakedModel bakePart(@Nonnull final ResourceLocation location, @Nonnull final IModelState state, @Nonnull final VertexFormat format, @Nonnull final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+        @Nonnull final IModel model = ModelLoaderRegistry.getModelOrLogError(location, "Couldn't load ModelHeadwear dependency: " + location);
+        return model.bake(new ModelStateComposition(state, model.getDefaultState()), format, bakedTextureGetter);
     }
 
     @SideOnly(Side.CLIENT)

@@ -70,7 +70,7 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(@Nonnull final EntityEquipmentSlot slot, @Nonnull final ItemStack goggles) {
         @Nonnull final Multimap<String, AttributeModifier> modifiers = MultimapBuilder.hashKeys().arrayListValues().build();
-        if(AkashicGogglesConfig.goggles.armorAttributes) AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getAttributeModifiers(slot)));
+        if(AkashicGogglesConfig.Goggles.armorAttributes) AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getAttributeModifiers(slot)));
         return mergeDuplicateAttributeModifiers(modifiers);
     }
 
@@ -153,17 +153,17 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
         return !AkashicGoggles.HAS_BAUBLES ? new InventoryAkashicGoggles(goggles) : new InventoryAkashicGoggles(goggles) {
             @Override
             public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-                return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE && AkashicGogglesConfig.goggles.baubleType != AkashicGogglesConfig.BaubleTypeAdapter.NONE || super.hasCapability(capability, facing);
+                return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE && AkashicGogglesConfig.Goggles.baubleType != AkashicGogglesConfig.BaubleTypeAdapter.NONE || super.hasCapability(capability, facing);
             }
 
             @Nullable
             @Override
             public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-                return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE && AkashicGogglesConfig.goggles.baubleType != AkashicGogglesConfig.BaubleTypeAdapter.NONE ? BaublesCapabilities.CAPABILITY_ITEM_BAUBLE.cast(new IBauble() {
+                return capability == BaublesCapabilities.CAPABILITY_ITEM_BAUBLE && AkashicGogglesConfig.Goggles.baubleType != AkashicGogglesConfig.BaubleTypeAdapter.NONE ? BaublesCapabilities.CAPABILITY_ITEM_BAUBLE.cast(new IBauble() {
                     @Nonnull
                     @Override
                     public BaubleType getBaubleType(@Nonnull final ItemStack goggles) {
-                        return AkashicGogglesConfig.goggles.baubleType.getBaubleType(goggles);
+                        return AkashicGogglesConfig.Goggles.baubleType.getBaubleType(goggles);
                     }
 
                     @Override

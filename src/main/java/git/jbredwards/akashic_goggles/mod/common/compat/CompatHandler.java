@@ -1,4 +1,4 @@
-package git.jbredwards.akashic_goggles.mod.common.baubles;
+package git.jbredwards.akashic_goggles.mod.common.compat;
 
 import baubles.api.BaublesApi;
 import baubles.api.cap.BaublesCapabilities;
@@ -7,6 +7,7 @@ import com.google.common.collect.Iterables;
 import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.api.IAkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.AkashicGogglesConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -27,10 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,35 +40,37 @@ import java.util.stream.IntStream;
  */
 public enum CompatHandler
 {
-    ACTUALLYADDITIONS("actuallyadditions", () -> AkashicGogglesConfig.modCompat.actuallyadditions.baubleType),
-    BIBLIOCRAFT("bibliocraft", () -> AkashicGogglesConfig.modCompat.bibliocraft.baubleType),
-    EMBERS("embers", () -> AkashicGogglesConfig.modCompat.embers.baubleType),
-    EREBUS("erebus", () -> AkashicGogglesConfig.modCompat.erebus.baubleType),
-    EVILCRAFT("evilcraft", () -> AkashicGogglesConfig.modCompat.evilcraft.baubleType),
-    GALACTICRAFT("galacticraftcore", () -> AkashicGogglesConfig.modCompat.galacticraft.baubleType),
-    OPENBLOCKS("openblocks", () -> AkashicGogglesConfig.modCompat.openblocks.baubleType),
-    RAILCRAFT("railcraft", () -> AkashicGogglesConfig.modCompat.railcraft.baubleType),
-    SIMPLYJETPACKS("simplyjetpacks", () -> AkashicGogglesConfig.modCompat.simplyjetpacks.baubleType);
+    ACTUALLYADDITIONS("actuallyadditions", AkashicGogglesConfig.ModCompat.ActuallyAdditions.class, () -> AkashicGogglesConfig.ModCompat.ActuallyAdditions.baubleType),
+    BIBLIOCRAFT("bibliocraft", AkashicGogglesConfig.ModCompat.BiblioCraft.class, () -> AkashicGogglesConfig.ModCompat.BiblioCraft.baubleType),
+    EMBERS("embers", AkashicGogglesConfig.ModCompat.Embers.class, () -> AkashicGogglesConfig.ModCompat.Embers.baubleType),
+    EREBUS("erebus", AkashicGogglesConfig.ModCompat.Erebus.class, () -> AkashicGogglesConfig.ModCompat.Erebus.baubleType),
+    EVILCRAFT("evilcraft", AkashicGogglesConfig.ModCompat.EvilCraft.class, () -> AkashicGogglesConfig.ModCompat.EvilCraft.baubleType),
+    GALACTICRAFT("galacticraftcore", AkashicGogglesConfig.ModCompat.Galacticraft.class, () -> AkashicGogglesConfig.ModCompat.Galacticraft.baubleType),
+    OPENBLOCKS("openblocks", AkashicGogglesConfig.ModCompat.OpenBlocks.class, () -> AkashicGogglesConfig.ModCompat.OpenBlocks.baubleType),
+    RAILCRAFT("railcraft", AkashicGogglesConfig.ModCompat.Railcraft.class, () -> AkashicGogglesConfig.ModCompat.Railcraft.baubleType),
+    SIMPLYJETPACKS("simplyjetpacks", AkashicGogglesConfig.ModCompat.SimplyJetpacks.class, () -> AkashicGogglesConfig.ModCompat.SimplyJetpacks.baubleType);
 
     @Nonnull private final Supplier<AkashicGogglesConfig.BaubleTypeAdapter> bauble;
+    @Nonnull public final Class<?> config;
     @Nonnull public final String modid;
 
     @Nonnull private static final ResourceLocation CAPABILITY_ID = new ResourceLocation(Tags.MOD_ID, "baubles_cap");
     @Nonnull private static final List<CompatHandler> LOADED_HANDLERS = new ArrayList<>();
 
-    CompatHandler(@Nonnull final String modidIn, @Nonnull final Supplier<AkashicGogglesConfig.BaubleTypeAdapter> baubleIn) {
+    CompatHandler(@Nonnull final String modidIn, @Nonnull final Class<?> configIn, @Nonnull final Supplier<AkashicGogglesConfig.BaubleTypeAdapter> baubleIn) {
         bauble = baubleIn;
+        config = configIn;
         modid = modidIn;
     }
 
     public static void preInit() {
         LOADED_HANDLERS.addAll(Arrays.asList(Arrays.stream(values()).filter(ch -> Loader.isModLoaded(ch.modid)).toArray(CompatHandler[]::new)));
-        MinecraftForge.EVENT_BUS.register(CompatHandler.class);
+        if(AkashicGoggles.HAS_BAUBLES) MinecraftForge.EVENT_BUS.register(CompatHandler.class);
     }
 
     @SideOnly(Side.CLIENT)
     public static void postInitClient() {
-        if(!LOADED_HANDLERS.isEmpty()) Minecraft.getMinecraft().getRenderManager().getSkinMap().forEach((skin, render) -> render.addLayer(new LayerBaublesArmor(render)));
+        if(AkashicGoggles.HAS_BAUBLES && !LOADED_HANDLERS.isEmpty()) Minecraft.getMinecraft().getRenderManager().getSkinMap().forEach((skin, render) -> render.addLayer(new LayerBaublesArmor(render)));
     }
 
     @Nonnull
@@ -83,6 +83,9 @@ public enum CompatHandler
 
     // Useful for lambda expressions.
     public static boolean test(@Nonnull final ItemStack stack) { return findFirst(stack).isPresent(); }
+
+    @Nonnull
+    public static List<CompatHandler> getLoadedHandlers() { return Collections.unmodifiableList(LOADED_HANDLERS); }
 
     // ------
     // Events

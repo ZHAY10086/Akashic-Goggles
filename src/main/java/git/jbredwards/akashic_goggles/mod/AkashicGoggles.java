@@ -4,7 +4,7 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
-import git.jbredwards.akashic_goggles.mod.common.baubles.CompatHandler;
+import git.jbredwards.akashic_goggles.mod.common.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -44,15 +44,16 @@ import java.util.Objects;
  *
  */
 @Mod.EventBusSubscriber
-@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, useMetadata = true, dependencies =
-        "required-before:autoreglib@[1.3-32,);")
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, useMetadata = true,
+dependencies = "required-before:autoreglib@[1.3-32,);",
+guiFactory = "git.jbredwards.akashic_goggles.mod.client.config.AkashicGogglesGuiFactory")
 public final class AkashicGoggles
 {
     public static final boolean HAS_BAUBLES = Loader.isModLoaded("baubles");
 
     @Mod.EventHandler
     static void preInit(@Nonnull final FMLPreInitializationEvent event) {
-        if(HAS_BAUBLES) CompatHandler.preInit();
+        CompatHandler.preInit();
         FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) ->
         DataFixesManager.processItemStack(fixer, compound.getCompoundTag("tag"), versionIn, InventoryAkashicGoggles.NBT_INVENTORY));
     }
@@ -60,7 +61,7 @@ public final class AkashicGoggles
     @Mod.EventHandler
     @SideOnly(Side.CLIENT)
     static void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
-        if(HAS_BAUBLES) CompatHandler.postInitClient();
+        CompatHandler.postInitClient();
         createMetadataTranslated(Objects.requireNonNull(Loader.instance().activeModContainer()));
     }
 

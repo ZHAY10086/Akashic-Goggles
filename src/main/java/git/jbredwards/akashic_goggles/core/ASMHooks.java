@@ -169,17 +169,17 @@ public final class ASMHooks
 
     @SideOnly(Side.CLIENT)
     public static void renderSensorGlassesMain(@Nonnull final ItemStack stack, @Nonnull final EntityPlayer player, @Nonnull final ScaledResolution resolution, final float partialTicks) {
-        if(AkashicGogglesConfig.modCompat.galacticraft.renderOverlayTexture) OverlaySensorGlasses.renderSensorGlassesMain(stack, player, resolution, partialTicks);
+        if(AkashicGogglesConfig.ModCompat.Galacticraft.renderOverlayTexture) OverlaySensorGlasses.renderSensorGlassesMain(stack, player, resolution, partialTicks);
     }
 
     @SideOnly(Side.CLIENT)
     public static void renderValuablesTexture(final double x, final double y, final double z, final double width, final double height, @Nonnull final BlockVec3 coords) {
-        if(AkashicGogglesConfig.modCompat.galacticraft.renderValuablesTexture) {
+        if(AkashicGogglesConfig.ModCompat.Galacticraft.renderValuablesTexture) {
             @Nonnull final World world = Minecraft.getMinecraft().world;
             @Nullable final IBlockState state = coords.getBlockState(world);
 
             if(state != null) {
-                @Nonnull final TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(state).getParticleTexture();
+                @Nonnull final TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getTexture(state);
                 if(sprite != Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite()) {
                     Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
@@ -245,7 +245,7 @@ public final class ASMHooks
     }
 
     public static boolean isSameColor(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
-        return ItemStack.areItemsEqualIgnoreDurability(stack, other) && (!AkashicGogglesConfig.modCompat.openblocks.stackCrayonGlasses
+        return ItemStack.areItemsEqualIgnoreDurability(stack, other) && (!AkashicGogglesConfig.ModCompat.OpenBlocks.stackCrayonGlasses
                 || ItemImaginationGlasses.getGlassesColor(stack) == ItemImaginationGlasses.getGlassesColor(other));
     }
 

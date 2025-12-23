@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-@Config(modid = Tags.MOD_ID)
 @Mod.EventBusSubscriber(modid = Tags.MOD_ID)
 public final class AkashicGogglesConfig
 {
@@ -33,131 +32,108 @@ public final class AkashicGogglesConfig
         public BaubleType getBaubleType(@Nonnull final ItemStack stack) { return BaubleType.values()[ordinal() - 1]; }
     }
 
-    @Nonnull
-    @Config.LangKey("config." + Tags.MOD_ID + ".goggles")
-    public static Goggles goggles = new Goggles();
+    @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + Tags.MOD_ID)
     public static class Goggles
     {
         @Config.LangKey("config." + Tags.MOD_ID + ".armorAttributes")
-        public boolean armorAttributes = false;
+        public static boolean armorAttributes = false;
 
         @Nonnull
         @Config.LangKey("config." + Tags.MOD_ID + ".baubleType")
-        public BaubleTypeAdapter baubleType = BaubleTypeAdapter.TRINKET;
+        public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.TRINKET;
 
         @Config.SlidingOption
         @Config.RangeInt(min = 1, max = 5)
         @Config.LangKey("config." + Tags.MOD_ID + ".height")
-        public int height = 1;
+        public static int height = 1;
 
         @Config.SlidingOption
         @Config.RangeInt(min = 1, max = 15)
         @Config.LangKey("config." + Tags.MOD_ID + ".width")
-        public int width = 5;
+        public static int width = 5;
     }
 
-    @Nonnull
-    @Config.LangKey("config." + Tags.MOD_ID + ".modCompat")
-    public static ModCompat modCompat = new ModCompat();
     public static class ModCompat
     {
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.actuallyadditions")
-        public ActuallyAdditions actuallyadditions = new ActuallyAdditions();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/actuallyadditions")
         public static class ActuallyAdditions
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.actuallyadditions.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.bibliocraft")
-        public BiblioCraft bibliocraft = new BiblioCraft();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/bibliocraft")
         public static class BiblioCraft
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.bibliocraft.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.embers")
-        public Embers embers = new Embers();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/embers")
         public static class Embers
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.embers.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.erebus")
-        public Erebus erebus = new Erebus();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/erebus")
         public static class Erebus
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.erebus.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.erebus")
-        public EvilCraft evilcraft = new EvilCraft();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/evilcraft")
         public static class EvilCraft
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.evilcraft.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.galacticraft")
-        public Galacticraft galacticraft = new Galacticraft();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/galacticraft")
         public static class Galacticraft
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
 
             @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderOverlayTexture")
-            public boolean renderOverlayTexture = true;
+            public static boolean renderOverlayTexture = true;
 
             @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderValuablesTexture")
-            public boolean renderValuablesTexture = false;
+            public static boolean renderValuablesTexture = false;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.openblocks")
-        public OpenBlocks openblocks = new OpenBlocks();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/openblocks")
         public static class OpenBlocks
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
 
             @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.stackCrayonGlasses")
-            public boolean stackCrayonGlasses = false;
+            public static boolean stackCrayonGlasses = false;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.railcraft")
-        public Railcraft railcraft = new Railcraft();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/railcraft")
         public static class Railcraft
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.railcraft.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
-        @Nonnull
-        @Config.LangKey("config." + Tags.MOD_ID + ".compat.simplyjetpacks")
-        public SimplyJetpacks simplyjetpacks = new SimplyJetpacks();
+        @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + "compat/simplyjetpacks")
         public static class SimplyJetpacks
         {
             @Nonnull
             @Config.LangKey("config." + Tags.MOD_ID + "compat.simplyjetpacks.baubleType")
-            public BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
+            public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
     }
 

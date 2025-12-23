@@ -1,4 +1,4 @@
-package git.jbredwards.akashic_goggles.mod.common.baubles;
+package git.jbredwards.akashic_goggles.mod.common.compat;
 
 import baubles.api.cap.BaublesCapabilities;
 import com.google.common.collect.Iterables;
