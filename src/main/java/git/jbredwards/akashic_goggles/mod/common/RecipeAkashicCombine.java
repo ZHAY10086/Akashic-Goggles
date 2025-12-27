@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.GameData;
 import vazkii.arl.interf.IDropInItem;
@@ -89,6 +90,12 @@ public class RecipeAkashicCombine extends ModRecipe
     @Nonnull
     @Override
     public NonNullList<ItemStack> getRemainingItems(@Nonnull final InventoryCrafting inv) {
+        // Play insert sound after "combine via craft".
+        @Nullable final EntityPlayer player = ForgeHooks.getCraftingPlayer();
+        if(player != null && !(player instanceof FakePlayer))
+            player.world.playSound(null, player.posX, player.posY, player.posZ, AkashicGoggles.ITEM_GOGGLES_INSERT, player.getSoundCategory(), 1, 1);
+
+        // Always consume all items.
         return NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
     }
 }

@@ -17,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.client.config.GuiUtils;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -60,7 +61,8 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             inventory.appendTag(ItemHandlerHelper.copyStackWithSize(stack, 1).serializeNBT());
 
             stack.shrink(1);
-            if(player != null && isValid(goggles)) player.world.playSound(null, player.posX, player.posY, player.posZ, AkashicGoggles.ITEM_GOGGLES_INSERT, player.getSoundCategory(), 1, 1);
+            if(player != null && !(player instanceof FakePlayer) && isValid(goggles))
+                player.world.playSound(null, player.posX, player.posY, player.posZ, AkashicGoggles.ITEM_GOGGLES_INSERT, player.getSoundCategory(), 1, 1);
         }
 
         return goggles;
