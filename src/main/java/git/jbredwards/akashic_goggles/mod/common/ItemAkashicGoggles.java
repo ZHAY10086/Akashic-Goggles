@@ -66,14 +66,6 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
         setCreativeTab(AkashicGoggles.TAB).setMaxStackSize(1);
     }
 
-    @Nonnull
-    @Override
-    public Multimap<String, AttributeModifier> getAttributeModifiers(@Nonnull final EntityEquipmentSlot slot, @Nonnull final ItemStack goggles) {
-        @Nonnull final Multimap<String, AttributeModifier> modifiers = MultimapBuilder.hashKeys().arrayListValues().build();
-        if(AkashicGogglesConfig.Goggles.armorAttributes) AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getAttributeModifiers(slot)));
-        return mergeDuplicateAttributeModifiers(modifiers);
-    }
-
     @Override
     public void onArmorTick(@Nonnull final World world, @Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles) {
         AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
@@ -236,6 +228,14 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     // -------
     // Utility
     // -------
+
+    @Nonnull
+    @Override
+    public Multimap<String, AttributeModifier> getAttributeModifiers(@Nonnull final EntityEquipmentSlot slot, @Nonnull final ItemStack goggles) {
+        @Nonnull final Multimap<String, AttributeModifier> modifiers = MultimapBuilder.hashKeys().arrayListValues().build();
+        if(AkashicGogglesConfig.Goggles.armorAttributes) AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> modifiers.putAll(stack.getAttributeModifiers(slot)));
+        return mergeDuplicateAttributeModifiers(modifiers);
+    }
 
     @Nonnull
     protected static Multimap<String, AttributeModifier> mergeDuplicateAttributeModifiers(@Nonnull final Multimap<String, AttributeModifier> modifiers) {

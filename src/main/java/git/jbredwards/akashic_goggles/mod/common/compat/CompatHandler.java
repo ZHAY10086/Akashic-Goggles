@@ -21,10 +21,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import vazkii.arl.util.TooltipHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +67,7 @@ public enum CompatHandler
 
     public static void preInit() {
         LOADED_HANDLERS.addAll(Arrays.asList(Arrays.stream(values()).filter(ch -> Loader.isModLoaded(ch.modid)).toArray(CompatHandler[]::new)));
-        if(AkashicGoggles.HAS_BAUBLES) MinecraftForge.EVENT_BUS.register(CompatHandler.class);
+        MinecraftForge.EVENT_BUS.register(CompatHandler.class);
     }
 
     @SideOnly(Side.CLIENT)
@@ -92,6 +94,19 @@ public enum CompatHandler
     // ------
 
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    static void addApplicableTooltip(@Nonnull final ItemTooltipEvent event) {
+        if(!AkashicGogglesConfig.Goggles.addApplicableTooltip) return;
+
+        @Nonnull final ItemStack stack = event.getItemStack();
+        @Nonnull final List<String> tooltip = event.getToolTip();
+
+        if(stack.getItem() instanceof IAkashicGoggles && ((IAkashicGoggles)stack.getItem()).canDropInAkashic(event.getEntityPlayer(), null, stack))
+            TooltipHandler.tooltipIfShift(tooltip, () -> TooltipHandler.addToTooltip(tooltip, AkashicGoggles.GOGGLES.getTranslationKey() + ".tooltip_applicable"));
+    }
+
+    @net.minecraftforge.fml.common.Optional.Method(modid = "baubles")
+    @SubscribeEvent
     static void attachBaublesCapability(@Nonnull final AttachCapabilitiesEvent<ItemStack> event) {
         findFirst(event.getObject()).ifPresent(cl -> event.addCapability(CAPABILITY_ID, new ICapabilityProvider() {
             @Nullable
@@ -108,6 +123,7 @@ public enum CompatHandler
         }));
     }
 
+    @net.minecraftforge.fml.common.Optional.Method(modid = "baubles")
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     static void renderBaublesOverlays(@Nonnull final RenderGameOverlayEvent.Post event) {

@@ -1,9 +1,14 @@
 item.akashic_goggles:goggles.name=Akashic Goggles
-item.akashic_goggles:goggles.tooltip=The Goggles of Goggles. Wear many different pieces of world-revealing eyewear at once.
+item.akashic_goggles:goggles.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once, by clicking them into this or by combining them with this in a crafting table.
+item.akashic_goggles:goggles.tooltip_applicable=This item may be applied to Akashic Goggles.
 itemGroup.akashic_goggles.tab=Akashic Goggles
 
 mod.akashic_goggles.credits=\n- jbredwards: creator and maintainer\n- CleanroomMC: created TemplateDevEnv
 mod.akashic_goggles.description=Adds the Goggles of Goggles, allowing you to wear many different pieces of world-revealing eyewear at once!
+
+subtitles.akashic_goggles.item.empty=Akashic Goggles empties
+subtitles.akashic_goggles.item.equip=Akashic Goggles rustles
+subtitles.akashic_goggles.item.insert=Akashic Goggles fills
 
 # ------
 # Config

@@ -35,6 +35,9 @@ public final class AkashicGogglesConfig
     @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID + '/' + Tags.MOD_ID)
     public static class Goggles
     {
+        @Config.LangKey("config." + Tags.MOD_ID + ".addApplicableTooltip")
+        public static boolean addApplicableTooltip = true;
+
         @Config.LangKey("config." + Tags.MOD_ID + ".armorAttributes")
         public static boolean armorAttributes = false;
 

@@ -4,6 +4,7 @@ import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
+import git.jbredwards.akashic_goggles.mod.common.RecipeAkashicCombine;
 import git.jbredwards.akashic_goggles.mod.common.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -32,7 +33,7 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.ShapedOreRecipe;
+import vazkii.arl.recipe.RecipeHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -98,8 +99,9 @@ public final class AkashicGoggles
     @Nullable public static Item GOGGLES;
     @Nonnull public static final CreativeTabs TAB = new CreativeTabs(Tags.MOD_ID + ".tab") {
         @Nonnull
+        @SideOnly(Side.CLIENT)
         @Override
-        public ItemStack createIcon() { return new ItemStack(GOGGLES); }
+        public ItemStack createIcon() { return GOGGLES.getDefaultInstance(); }
     };
 
     @SubscribeEvent
@@ -115,7 +117,8 @@ public final class AkashicGoggles
 
     @SubscribeEvent
     static void registerRecipes(@Nonnull final RegistryEvent.Register<IRecipe> event) {
-        event.getRegistry().register(new ShapedOreRecipe(null, GOGGLES, "SSS", "GBG", 'S', "string", 'G', "paneGlass", 'B', OreDictionary.doesOreNameExist("bookshelf") ? "bookshelf" : Blocks.BOOKSHELF).setRegistryName(Tags.MOD_ID, "goggles"));
+        RecipeHandler.addShapedRecipe(new ItemStack(GOGGLES), "SSS", "GBG", 'S', "string", 'G', "paneGlass", 'B', OreDictionary.doesOreNameExist("bookshelf") ? "bookshelf" : Blocks.BOOKSHELF);
+        new RecipeAkashicCombine();
     }
 
     @SubscribeEvent

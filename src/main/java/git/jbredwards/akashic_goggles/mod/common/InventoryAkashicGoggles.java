@@ -46,21 +46,21 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     public InventoryAkashicGoggles(@Nonnull final ItemStack gogglesIn) { goggles = gogglesIn; }
 
     @Override
-    public boolean canDropItemIn(@Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
+    public boolean canDropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
         return stack.getItem() instanceof IAkashicGoggles && ((IAkashicGoggles)stack.getItem()).canDropInAkashic(player, goggles, stack) && AkashicGogglesUtil
                 .getContainedStacks(goggles).noneMatch(other -> ((IAkashicGoggles)stack.getItem()).compareDuringAkashicDropIn(player, goggles, stack, other));
     }
 
     @Nonnull
     @Override
-    public ItemStack dropItemIn(@Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
+    public ItemStack dropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
         if(canDropItemIn(player, goggles, stack)) {
             @Nullable NBTTagList inventory = ItemNBTHelper.getList(goggles, NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, true);
             if(inventory == null) ItemNBTHelper.setList(goggles, NBT_INVENTORY, inventory = new NBTTagList());
             inventory.appendTag(ItemHandlerHelper.copyStackWithSize(stack, 1).serializeNBT());
 
             stack.shrink(1);
-            player.playSound(AkashicGoggles.ITEM_GOGGLES_INSERT, 1, 1);
+            if(player != null && isValid(goggles)) player.world.playSound(null, player.posX, player.posY, player.posZ, AkashicGoggles.ITEM_GOGGLES_INSERT, player.getSoundCategory(), 1, 1);
         }
 
         return goggles;
@@ -79,6 +79,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
 
     // Let's prevent people from inserting items into JEI akashic goggles...
     public static void setValid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, true); }
+    public static void setInvalid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, false); }
     public static boolean isValid(@Nonnull final ItemStack goggles) {
         return ItemNBTHelper.getBoolean(goggles, NBT_IS_VALID, false) && ItemNBTHelper.getBoolean(goggles, NBT_MUTABLE, true);
     }
@@ -104,8 +105,11 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     static void renderTooltipBackground(@Nonnull final RenderTooltipEvent.PostBackground event) {
-        if(event.getStack().getItem() instanceof ItemAkashicGoggles && ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false)) {
-            final int slots = Math.max(ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false).tagCount() + 1, width());
+        if(event.getStack().getItem() instanceof ItemAkashicGoggles) {
+            @Nonnull final NBTTagList slotData = ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false);
+            if(slotData.isEmpty() && !ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false)) return;
+
+            final int slots = Math.max(slotData.tagCount() + 1, width());
             final int zLevel = 300;
 
             final int backgroundColor = 0xF0260F08;
@@ -133,7 +137,9 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     static void renderTooltipSlots(@Nonnull final RenderTooltipEvent.PostText event) {
-        if(event.getStack().getItem() instanceof ItemAkashicGoggles && ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false)) {
+        if(event.getStack().getItem() instanceof ItemAkashicGoggles) {
+            if(!ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false) && ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false).isEmpty()) return;
+
             @Nonnull final ItemStack[] inventory = AkashicGogglesUtil.getContainedStacks(event.getStack()).toArray(ItemStack[]::new);
             final int renderSize = Math.max(inventory.length + width() - inventory.length % width(), width() * height());
 

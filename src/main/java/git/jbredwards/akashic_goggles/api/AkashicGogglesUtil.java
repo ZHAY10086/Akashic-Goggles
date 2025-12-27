@@ -28,6 +28,13 @@ public enum AkashicGogglesUtil
 {
     ;
 
+    /**
+     * @return A stream comprised of all items contained within the Akashic Goggles, or empty if the provided stack is not Akashic Goggles.
+     * @throws NullPointerException If stack is null.
+     *
+     * @since 1.0.0
+     * @author jbred
+     */
     @Nonnull
     public static Stream<ItemStack> getContainedStacks(@Nonnull final ItemStack stack) {
         if(!(stack.getItem() instanceof ItemAkashicGoggles)) return Stream.empty();

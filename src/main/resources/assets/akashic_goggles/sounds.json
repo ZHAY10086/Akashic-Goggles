@@ -1,10 +1,28 @@
 {
   "item.empty": {
-    "subtitle": "",
+    "subtitle": "subtitles.akashic_goggles.item.empty",
     "sounds": [
       {
         "type": "event",
-        "name": ""
+        "name": "minecraft:entity.itemframe.remove_item"
+      }
+    ]
+  },
+  "item.equip": {
+    "subtitle": "subtitles.akashic_goggles.item.equip",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:item.armor.equip_leather"
+      }
+    ]
+  },
+  "item.insert": {
+    "subtitle": "subtitles.akashic_goggles.item.insert",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.itemframe.add_item"
       }
     ]
   }
