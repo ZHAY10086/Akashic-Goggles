@@ -1,0 +1,40 @@
+{
+    "forge_marker": 1,
+    "variants": {
+        "inventory": [{
+            "model": "akashic_goggles:builtin",
+            "custom": {
+                "base": "akashic_goggles:goggles#base",
+                "head": "akashic_goggles:goggles#head"
+            }
+        }],
+        "base": [{
+            "model": "builtin/generated",
+			"transform": "forge:default-item",
+            "textures": {
+                "layer0": "akashic_goggles:items/goggles",
+                "layer1": "akashic_goggles:items/goggles_eyes"
+            }
+        }],
+        "head": [{
+            "model": "akashic_goggles:strap",
+            "transform": {
+                "scale": [0.85, 0.85, 0.85],
+                "translation": [0, 0.0625, 0]
+            },
+            "submodel": {
+                "goggles": [
+                    {
+                        "model": "builtin/generated",
+                        "transform": {
+                            "translation": [0, 0, -0.53125]
+                        },
+                        "textures": {
+                            "layer0": "akashic_goggles:items/goggles_head_front"
+                        }
+                    }
+                ]
+            }
+        }]
+    }
+}

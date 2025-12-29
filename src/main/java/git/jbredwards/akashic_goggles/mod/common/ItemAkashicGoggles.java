@@ -31,7 +31,9 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.IRarity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.Constants;
@@ -85,7 +87,27 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(@Nonnull final ItemStack goggles, @Nullable final World worldIn, @Nonnull final List<String> tooltip, @Nonnull final ITooltipFlag flagIn) {
-        TooltipHandler.tooltipIfShift(tooltip, () -> TooltipHandler.addToTooltip(tooltip, getTranslationKey(goggles) + ".tooltip"));
+        TooltipHandler.tooltipIfShift(tooltip, () -> TooltipHandler.addToTooltip(tooltip, getTranslationKey() + ".tooltip"));
+    }
+
+    @Nonnull
+    @Override
+    public String getTranslationKey(@Nonnull final ItemStack goggles) {
+        return super.getTranslationKey(goggles) + (InventoryAkashicGoggles.isMutable(goggles) ? "" : ".locked");
+    }
+
+    @Nonnull
+    @Override
+    public IRarity getForgeRarity(@Nonnull final ItemStack goggles) {
+        return InventoryAkashicGoggles.isMutable(goggles) ? super.getForgeRarity(goggles) : new IRarity() {
+            @Nonnull
+            @Override
+            public TextFormatting getColor() { return TextFormatting.RED; }
+
+            @Nonnull
+            @Override
+            public String getName() { return "locked"; }
+        };
     }
 
     @Nonnull
@@ -93,17 +115,21 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     public ActionResult<ItemStack> onItemRightClick(@Nonnull final World worldIn, @Nonnull final EntityPlayer playerIn, @Nonnull final EnumHand handIn) {
         @Nonnull final ItemStack goggles = playerIn.getHeldItem(handIn);
         @Nonnull final NBTTagList inventory = ItemNBTHelper.getList(goggles, InventoryAkashicGoggles.NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false);
-        if(!inventory.isEmpty()) {
-            if(!worldIn.isRemote) {
-                if(!playerIn.isSneaking()) ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack((NBTTagCompound)inventory.removeTag(inventory.tagCount() - 1)));
-                else { // Allow players to remove all items inside the Akashic Goggles at once.
-                    for(int slot = 0; slot < inventory.tagCount(); slot++) ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack(inventory.getCompoundTagAt(slot)));
-                    ItemNBTHelper.getNBT(goggles).removeTag(InventoryAkashicGoggles.NBT_INVENTORY);
+        if(!inventory.isEmpty() && InventoryAkashicGoggles.isMutable(goggles)) {
+            final int inventoryLocked = ItemNBTHelper.getInt(goggles, InventoryAkashicGoggles.NBT_INVENTORY_LOCKED, 0);
+            if(inventoryLocked < inventory.tagCount()) {
+                if(!worldIn.isRemote) {
+                    if(!playerIn.isSneaking()) ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack((NBTTagCompound)inventory.removeTag(inventory.tagCount() - 1)));
+                    else { // Allow players to remove all items inside the Akashic Goggles at once.
+                        for(int slot = inventory.tagCount() - 1; slot >= inventoryLocked; slot--) ItemHandlerHelper.giveItemToPlayer(playerIn,
+                                new ItemStack(inventoryLocked == 0 ? inventory.getCompoundTagAt(slot) : (NBTTagCompound)inventory.removeTag(slot)));
+                        if(inventoryLocked == 0) ItemNBTHelper.getNBT(goggles).removeTag(InventoryAkashicGoggles.NBT_INVENTORY);
+                    }
                 }
-            }
 
-            playerIn.playSound(AkashicGoggles.ITEM_GOGGLES_EMPTY, 1, 1);
-            return ActionResult.newResult(EnumActionResult.SUCCESS, goggles);
+                playerIn.playSound(AkashicGoggles.ITEM_GOGGLES_EMPTY, 1, 1);
+                return ActionResult.newResult(EnumActionResult.SUCCESS, goggles);
+            }
         }
 
         return ActionResult.newResult(EnumActionResult.PASS, goggles);

@@ -12,7 +12,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.GameData;
 import vazkii.arl.interf.IDropInItem;
 import vazkii.arl.recipe.ModRecipe;
-import vazkii.arl.util.ItemNBTHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +42,7 @@ public class RecipeAkashicCombine extends ModRecipe
         for(int i = 0; i < inv.getSizeInventory(); i++) {
             if(inv.getStackInSlot(i).getItem() == AkashicGoggles.GOGGLES) {
                 goggles = ItemHandlerHelper.copyStackWithSize(inv.getStackInSlot(gogglesSlot = i), 1);
-                if(!ItemNBTHelper.getBoolean(goggles, InventoryAkashicGoggles.NBT_MUTABLE, true)) return ItemStack.EMPTY;
+                if(!InventoryAkashicGoggles.isMutable(goggles)) return ItemStack.EMPTY;
                 break;
             }
         }

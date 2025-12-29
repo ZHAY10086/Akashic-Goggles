@@ -1,5 +1,6 @@
 package git.jbredwards.akashic_goggles.mod.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonParser;
 import git.jbredwards.akashic_goggles.Tags;
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -40,6 +42,12 @@ public class ModelHeadwear implements IModel
     public ModelHeadwear(@Nonnull final ResourceLocation baseLocationIn, @Nonnull final ResourceLocation headLocationIn) {
         baseLocation = baseLocationIn;
         headLocation = headLocationIn;
+    }
+
+    @Nonnull
+    @Override
+    public Collection<ResourceLocation> getDependencies() {
+        return ImmutableList.of(baseLocation, headLocation);
     }
 
     @Nonnull

@@ -1,4 +1,6 @@
 item.akashic_goggles:goggles.name=Akashic Goggles
+item.akashic_goggles:goggles.locked.name=Akashic Goggles (Locked)
+item.akashic_goggles:goggles.locked.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once.
 item.akashic_goggles:goggles.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once, by clicking them into this or by combining them with this in a crafting table.
 item.akashic_goggles:goggles.tooltip_applicable=This item may be applied to Akashic Goggles.
 itemGroup.akashic_goggles.tab=Akashic Goggles

@@ -1,5 +1,6 @@
 package git.jbredwards.akashic_goggles.mod.common;
 
+import com.google.common.primitives.Ints;
 import git.jbredwards.akashic_goggles.Tags;
 import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.api.IAkashicGoggles;
@@ -14,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
@@ -40,7 +42,11 @@ import javax.annotation.Nullable;
 public class InventoryAkashicGoggles extends AbstractDropIn
 {
     @Nonnull
-    public static final String NBT_INVENTORY = Tags.MOD_ID + ":inventory", NBT_IS_VALID = Tags.MOD_ID + ":is_valid", NBT_MUTABLE = Tags.MOD_ID + ":mutable";
+    public static final String
+            NBT_INVENTORY = Tags.MOD_ID + ":inventory", // Holds all items.
+            NBT_INVENTORY_LOCKED = Tags.MOD_ID + ":inventory_locked", // Number of locked slots.
+            NBT_IS_VALID = Tags.MOD_ID + ":is_valid", // This has been initialized (boolean).
+            NBT_MUTABLE = Tags.MOD_ID + ":mutable"; // This may have items added or removed (boolean).
 
     @Nonnull
     public final ItemStack goggles;
@@ -79,11 +85,16 @@ public class InventoryAkashicGoggles extends AbstractDropIn
         return super.hasCapability(capability, null) && isValid(goggles);
     }
 
+    // Allow akashic goggles to be locked globally.
+    public static boolean isMutable(@Nonnull final ItemStack goggles) {
+        return ItemNBTHelper.getBoolean(goggles, NBT_MUTABLE, true);
+    }
+
     // Let's prevent people from inserting items into JEI akashic goggles...
     public static void setValid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, true); }
     public static void setInvalid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, false); }
     public static boolean isValid(@Nonnull final ItemStack goggles) {
-        return ItemNBTHelper.getBoolean(goggles, NBT_IS_VALID, false) && ItemNBTHelper.getBoolean(goggles, NBT_MUTABLE, true);
+        return ItemNBTHelper.getBoolean(goggles, NBT_IS_VALID, false) && isMutable(goggles);
     }
 
     @SubscribeEvent
@@ -100,7 +111,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
 
     @Nonnull
     public static final ResourceLocation SLOT_TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/gui/slot.png");
-    public static int SLOT_SIZE = 18;
+    public static int SLOT_SIZE = 18, HEIGHT_RENDER_OFFSET = -12;
     public static int height() { return AkashicGogglesConfig.Goggles.height; }
     public static int width() { return AkashicGogglesConfig.Goggles.width; }
 
@@ -111,7 +122,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             @Nonnull final NBTTagList slotData = ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false);
             if(slotData.isEmpty() && !ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false)) return;
 
-            final int slots = Math.max(slotData.tagCount() + 1, width());
+            final int slots = Ints.max(slotData.tagCount() + (isMutable(event.getStack()) ? 1 : 0), 1, width());
             final int zLevel = 300;
 
             final int backgroundColor = 0xF0260F08;
@@ -119,9 +130,9 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             final int borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
 
             final int width = SLOT_SIZE * Math.min(slots, width());
-            final int height = SLOT_SIZE * Math.max((int)Math.ceil(slots / (double)width()), height());
+            final int height = SLOT_SIZE * Math.max(MathHelper.ceil(slots / (double)width()), height());
             final int x = event.getX() + (event.getWidth() >> 1) - (width >> 1);
-            final int y = event.getY() - height - 12;
+            final int y = event.getY() - height + HEIGHT_RENDER_OFFSET;
 
             // copied from GuiUtils
             GuiUtils.drawGradientRect(zLevel, x - 3, y - 4, x + width + 3, y - 3, backgroundColor, backgroundColor);
@@ -143,29 +154,33 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             if(!ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false) && ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false).isEmpty()) return;
 
             @Nonnull final ItemStack[] inventory = AkashicGogglesUtil.getContainedStacks(event.getStack()).toArray(ItemStack[]::new);
-            final int renderSize = Math.max(inventory.length + width() - inventory.length % width(), width() * height());
+            final int inventoryLocked = ItemNBTHelper.getInt(event.getStack(), NBT_INVENTORY_LOCKED, 0);
+
+            final boolean immutable = !isMutable(event.getStack());
+            final int slotsForRender = inventory.length - (immutable ? 1 : 0);
+            final int renderSize = Math.max(slotsForRender + width() - slotsForRender % width(), width() * height());
 
             final int xOffset = (event.getWidth() >> 1) - (SLOT_SIZE * width() >> 1);
-            final int yOffset = SLOT_SIZE *- (int)Math.ceil(renderSize / (double)width()) - 12;
+            final int yOffset = SLOT_SIZE *- (int)Math.ceil(renderSize / (double)width()) + HEIGHT_RENDER_OFFSET;
 
             // draw real slots
             for(int slot = 0; slot < inventory.length; slot++) {
                 final int x = event.getX() + SLOT_SIZE * (slot % width()) + xOffset;
                 final int y = event.getY() + SLOT_SIZE * (slot / width()) + yOffset;
-                drawSlot(SLOT_TEXTURE, event.getFontRenderer(), inventory[slot], x, y);
+                drawSlot(SLOT_TEXTURE, event.getFontRenderer(), inventory[slot], x, y, immutable || slot < inventoryLocked);
             }
 
             // draw fake empty slots to fill remaining box
             for(int slot = inventory.length; slot < renderSize; slot++) {
                 final int x = event.getX() + SLOT_SIZE * (slot % width()) + xOffset;
                 final int y = event.getY() + SLOT_SIZE * (slot / width()) + yOffset;
-                drawSlot(SLOT_TEXTURE, event.getFontRenderer(), ItemStack.EMPTY, x, y);
+                drawSlot(SLOT_TEXTURE, event.getFontRenderer(), ItemStack.EMPTY, x, y, immutable);
             }
         }
     }
 
     @SideOnly(Side.CLIENT)
-    public static void drawSlot(@Nonnull final ResourceLocation texture, @Nonnull final FontRenderer font, @Nonnull final ItemStack stack, final int x, final int y) {
+    public static void drawSlot(@Nonnull final ResourceLocation texture, @Nonnull final FontRenderer font, @Nonnull final ItemStack stack, final int x, final int y, final boolean immutable) {
         GlStateManager.enableBlend();
         GlStateManager.pushMatrix();
         {
@@ -174,7 +189,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             GlStateManager.color(1, 1, 1);
             {
                 mc.getTextureManager().bindTexture(texture);
-                Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+                Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE << 1, SLOT_SIZE);
             }
             GlStateManager.enableDepth();
             GlStateManager.enableRescaleNormal();
@@ -186,7 +201,13 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             }
             mc.getRenderItem().zLevel = 0;
             RenderHelper.disableStandardItemLighting();
+            GlStateManager.color(1, 1, 1);
             GlStateManager.disableDepth();
+            if(immutable) {
+                GlStateManager.translate(0, 0, 1000);
+                mc.getTextureManager().bindTexture(texture);
+                Gui.drawModalRectWithCustomSizedTexture(x, y, SLOT_SIZE, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE << 1, SLOT_SIZE);
+            }
         }
         GlStateManager.popMatrix();
     }
