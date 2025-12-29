@@ -35,7 +35,9 @@ import java.util.function.Function;
 public class ModelHeadwear implements IModel
 {
     @Nonnull
-    public static final ModelHeadwear DUMMY = new ModelHeadwear(ModelBakery.MODEL_MISSING, ModelBakery.MODEL_MISSING);
+    public static final ModelHeadwear DUMMY = new ModelHeadwear(
+            new ResourceLocation(ModelLoader.MODEL_MISSING.getNamespace(), ModelLoader.MODEL_MISSING.getPath()),
+            new ResourceLocation(ModelLoader.MODEL_MISSING.getNamespace(), ModelLoader.MODEL_MISSING.getPath()));
 
     @Nonnull
     public final ResourceLocation baseLocation, headLocation;
