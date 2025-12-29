@@ -12,6 +12,7 @@ import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -117,7 +118,7 @@ public final class AkashicGoggles
 
     @SubscribeEvent
     static void registerRecipes(@Nonnull final RegistryEvent.Register<IRecipe> event) {
-        RecipeHandler.addShapedRecipe(new ItemStack(GOGGLES), "SSS", "GBG", 'S', "string", 'G', "paneGlass", 'B', OreDictionary.doesOreNameExist("bookshelf") ? "bookshelf" : Blocks.BOOKSHELF);
+        RecipeHandler.addShapedRecipe(new ItemStack(GOGGLES), "SSS", "GBG", "WWW", 'S', "string", 'G', RecipeHandler.compound("blockGlass", "paneGlass"), 'B', OreDictionary.doesOreNameExist("bookshelf") ? "bookshelf" : Blocks.BOOKSHELF, 'W', Items.BOOK);
         new RecipeAkashicCombine();
     }
 
