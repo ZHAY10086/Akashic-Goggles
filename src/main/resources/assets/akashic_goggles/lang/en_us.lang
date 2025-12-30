@@ -21,6 +21,8 @@ akashic_goggles/akashic_goggles.tooltip=Config settings for the Akashic Goggles 
 config.akashic_goggles.modCompat=Mod Compatibility
 config.akashic_goggles.modCompat.tooltip=Config settings for builtin Akashic Goggles mod support.
 
+config.akashic_goggles.addApplicableTooltip=Add Tooltip For Applicable
+config.akashic_goggles.addApplicableTooltip.tooltip=Add tooltips for world-revealing eyewear that may be applied to Akashic Goggles.
 config.akashic_goggles.armorAttributes=Apply Nested Armor Attributes
 config.akashic_goggles.armorAttributes.tooltip=While wearing Akashic Goggles that are holding items with armor attributes, those attributes should be applied to the wearer.
 config.akashic_goggles.baubleType=Bauble Type
@@ -46,14 +48,37 @@ config.akashic_goggles.compat.embers.baubleType=Bauble Type
 config.akashic_goggles.compat.embers.baubleType.tooltip=The Bauble type for Ashen Glasses.
 
 akashic_goggles/compat/erebus=Erebus
+akashic_goggles/compat/erebus.tooltip=Akashic Goggles mod compatibility settings for Erebus.
+config.akashic_goggles.compat.erebus.baubleType=Bauble Type
+config.akashic_goggles.compat.erebus.baubleType.tooltip=The Bauble type for Compound Goggles.
 
 akashic_goggles/compat/evilcraft=EvilCraft
+akashic_goggles/compat/evilcraft.tooltip=Akashic Goggles mod compatibility settings for EvilCraft.
+config.akashic_goggles.compat.evilcraft.baubleType=Bauble Type
+config.akashic_goggles.compat.evilcraft.baubleType.tooltip=The Bauble type for Spectral Glasses.
 
 akashic_goggles/compat/galacticraft=Galacticraft
-config.akashic_goggles.compat.galacticraft.renderOverlayTexture=Render Overlay Texture
+akashic_goggles/compat/galacticraft.tooltip=Akashic Goggles mod compatibility settings for Galacticraft.
+config.akashic_goggles.compat.galacticraft.baubleType=Bauble Type
+config.akashic_goggles.compat.galacticraft.baubleType.tooltip=The Bauble type for Sensor Glasses.
+config.akashic_goggles.compat.galacticraft.renderOverlayTexture=Render Overlay Texture (Sensor Glasses)
+config.akashic_goggles.compat.galacticraft.renderOverlayTexture.tooltip=Allows users to disable the Sensor Glasses overlay texture that makes them inconvenient to use.
+config.akashic_goggles.compat.galacticraft.renderValuablesTexture=Render Valuables Texture (Sensor Glasses)
+config.akashic_goggles.compat.galacticraft.renderValuablesTexture.tooltip=New feature for Sensor Glasses that makes them render ore textures instead of untextured squares.
 
 akashic_goggles/compat/openblocks=OpenBlocks
+akashic_goggles/compat/openblocks.tooltip=Akashic Goggles mod compatibility settings for OpenBlocks.
+config.akashic_goggles.compat.openblocks.baubleType=Bauble Type
+config.akashic_goggles.compat.openblocks.baubleType.tooltip=The Bauble type for OpenBlocks Glasses.
+config.akashic_goggles.compat.openblocks.stackCrayonGlasses=Stack Crayon Glasses
+config.akashic_goggles.compat.openblocks.stackCrayonGlasses.tooltip=Allow multiple Crayon Glasses to be stored in Akashic Goggles if they have different colors.
 
 akashic_goggles/compat/railcraft=Railcraft
+akashic_goggles/compat/railcraft.tooltip=Akashic Goggles mod compatibility settings for Railcraft.
+config.akashic_goggles.compat.railcraft.baubleType=Bauble Type
+config.akashic_goggles.compat.railcraft.baubleType.tooltip=The Bauble type for Trackman's Goggles.
 
 akashic_goggles/compat/simplyjetpacks=Simply Jetpacks
+akashic_goggles/compat/simplyjetpacks.tooltip=Akashic Goggles mod compatibility settings for Simply Jetpacks.
+config.akashic_goggles.compat.simplyjetpacks.baubleType=Bauble Type
+config.akashic_goggles.compat.simplyjetpacks.baubleType.tooltip=The Bauble type for Pilot Goggles.

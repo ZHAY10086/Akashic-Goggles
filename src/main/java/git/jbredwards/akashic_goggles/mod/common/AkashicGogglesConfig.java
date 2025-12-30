@@ -62,7 +62,7 @@ public final class AkashicGogglesConfig
         public static class ActuallyAdditions
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.actuallyadditions.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.actuallyadditions.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -70,7 +70,7 @@ public final class AkashicGogglesConfig
         public static class BiblioCraft
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.bibliocraft.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.bibliocraft.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -78,7 +78,7 @@ public final class AkashicGogglesConfig
         public static class Embers
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.embers.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.embers.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -86,7 +86,7 @@ public final class AkashicGogglesConfig
         public static class Erebus
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.erebus.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.erebus.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -94,7 +94,7 @@ public final class AkashicGogglesConfig
         public static class EvilCraft
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.evilcraft.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.evilcraft.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -102,13 +102,13 @@ public final class AkashicGogglesConfig
         public static class Galacticraft
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.galacticraft.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
 
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderOverlayTexture")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.galacticraft.renderOverlayTexture")
             public static boolean renderOverlayTexture = true;
 
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.galacticraft.renderValuablesTexture")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.galacticraft.renderValuablesTexture")
             public static boolean renderValuablesTexture = false;
         }
 
@@ -116,10 +116,10 @@ public final class AkashicGogglesConfig
         public static class OpenBlocks
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.openblocks.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
 
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.openblocks.stackCrayonGlasses")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.openblocks.stackCrayonGlasses")
             public static boolean stackCrayonGlasses = false;
         }
 
@@ -127,7 +127,7 @@ public final class AkashicGogglesConfig
         public static class Railcraft
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.railcraft.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.railcraft.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
 
@@ -135,7 +135,7 @@ public final class AkashicGogglesConfig
         public static class SimplyJetpacks
         {
             @Nonnull
-            @Config.LangKey("config." + Tags.MOD_ID + "compat.simplyjetpacks.baubleType")
+            @Config.LangKey("config." + Tags.MOD_ID + ".compat.simplyjetpacks.baubleType")
             public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.HEAD;
         }
     }
