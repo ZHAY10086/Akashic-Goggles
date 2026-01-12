@@ -61,6 +61,10 @@ public final class AkashicGogglesConfig
         @Config.LangKey("config." + Tags.MOD_ID + ".baubleType")
         public static BaubleTypeAdapter baubleType = BaubleTypeAdapter.TRINKET;
 
+        @Nonnull
+        @Config.LangKey("config." + Tags.MOD_ID + ".blacklist")
+        public static String[] blacklist = new String[0];
+
         @Config.SlidingOption
         @Config.RangeInt(min = 1, max = 5)
         @Config.LangKey("config." + Tags.MOD_ID + ".height")

@@ -25,6 +25,7 @@ import git.jbredwards.akashic_goggles.api.AkashicGogglesUtil;
 import git.jbredwards.akashic_goggles.api.IAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.AkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.AkashicGogglesConfig;
+import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -117,8 +118,8 @@ public enum CompatHandler
         @Nonnull final ItemStack stack = event.getItemStack();
         @Nonnull final List<String> tooltip = event.getToolTip();
 
-        if(stack.getItem() instanceof IAkashicGoggles && ((IAkashicGoggles)stack.getItem()).canDropInAkashic(event.getEntityPlayer(), null, stack))
-            TooltipHandler.tooltipIfShift(tooltip, () -> TooltipHandler.addToTooltip(tooltip, AkashicGoggles.GOGGLES.getTranslationKey() + ".tooltip_applicable"));
+        if(InventoryAkashicGoggles.canDropIn(event.getEntityPlayer(), null, stack)) TooltipHandler.tooltipIfShift(tooltip,
+                () -> TooltipHandler.addToTooltip(tooltip, AkashicGoggles.GOGGLES.getTranslationKey() + ".tooltip_applicable"));
     }
 
     @net.minecraftforge.fml.common.Optional.Method(modid = "baubles")

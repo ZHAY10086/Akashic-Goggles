@@ -43,6 +43,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.ItemHandlerHelper;
+import org.apache.commons.lang3.ArrayUtils;
 import vazkii.arl.util.AbstractDropIn;
 import vazkii.arl.util.ItemNBTHelper;
 
@@ -69,9 +70,12 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     public InventoryAkashicGoggles(@Nonnull final ItemStack gogglesIn) { goggles = gogglesIn; }
 
     @Override
-    public boolean canDropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) {
-        return stack.getItem() instanceof IAkashicGoggles && ((IAkashicGoggles)stack.getItem()).canDropInAkashic(player, goggles, stack) && AkashicGogglesUtil
-                .getContainedStacks(goggles).noneMatch(other -> ((IAkashicGoggles)stack.getItem()).compareDuringAkashicDropIn(player, goggles, stack, other));
+    public boolean canDropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) { return canDropIn(player, goggles, stack); }
+    public static boolean canDropIn(@Nullable final EntityPlayer player, @Nullable final ItemStack goggles, @Nonnull final ItemStack stack) {
+        if(!(stack.getItem() instanceof IAkashicGoggles) || !((IAkashicGoggles)stack.getItem()).canDropInAkashic(player, goggles, stack)) return false;
+        else if(ArrayUtils.contains(AkashicGogglesConfig.Goggles.blacklist, String.valueOf(stack.getItem().getRegistryName()))) return false;
+
+        else return goggles == null || AkashicGogglesUtil.getContainedStacks(goggles).noneMatch(other -> ((IAkashicGoggles)stack.getItem()).compareDuringAkashicDropIn(player, goggles, stack, other));
     }
 
     @Nonnull
