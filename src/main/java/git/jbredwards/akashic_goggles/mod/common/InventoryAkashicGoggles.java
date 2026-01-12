@@ -72,10 +72,11 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @Override
     public boolean canDropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) { return canDropIn(player, goggles, stack); }
     public static boolean canDropIn(@Nullable final EntityPlayer player, @Nullable final ItemStack goggles, @Nonnull final ItemStack stack) {
-        if(!(stack.getItem() instanceof IAkashicGoggles) || !((IAkashicGoggles)stack.getItem()).canDropInAkashic(player, goggles, stack)) return false;
-        else if(ArrayUtils.contains(AkashicGogglesConfig.Goggles.blacklist, String.valueOf(stack.getItem().getRegistryName()))) return false;
+        @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
 
-        else return goggles == null || AkashicGogglesUtil.getContainedStacks(goggles).noneMatch(other -> ((IAkashicGoggles)stack.getItem()).compareDuringAkashicDropIn(player, goggles, stack, other));
+        if(equipable == null || !equipable.canDropInAkashic(player, goggles, stack)) return false;
+        else if(ArrayUtils.contains(AkashicGogglesConfig.Goggles.blacklist, String.valueOf(stack.getItem().getRegistryName()))) return false;
+        else return goggles == null || AkashicGogglesUtil.getContainedStacks(goggles).noneMatch(other -> equipable.compareDuringAkashicDropIn(player, goggles, stack, other));
     }
 
     @Nonnull

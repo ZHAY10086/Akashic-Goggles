@@ -16,6 +16,7 @@
 
 package git.jbredwards.akashic_goggles.api;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 
@@ -23,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Any item that implements this may be placed into Akashic Goggles.
+ * Any block or item that implements this may be placed into Akashic Goggles.
  *
  * @since 1.0.0
  * @author jbred
@@ -31,6 +32,21 @@ import javax.annotation.Nullable;
  */
 public interface IAkashicGoggles
 {
+    /**
+     * @return An {@link IAkashicGoggles} handler from the provided ItemStack.
+     *
+     * @throws NullPointerException If stack is null.
+     * @since 1.0.0
+     * @author jbred
+     */
+    @Nullable
+    static IAkashicGoggles get(@Nonnull final ItemStack stack) {
+        if(stack.getItem() instanceof IAkashicGoggles) return (IAkashicGoggles)stack.getItem();
+
+        @Nonnull final Block block = Block.getBlockFromItem(stack.getItem());
+        return block instanceof IAkashicGoggles ? (IAkashicGoggles)block : null;
+    }
+
     /**
      * @param player The entity wearing Akashic Goggles.
      * @param goggles The Akashic Goggles ItemStack.

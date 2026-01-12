@@ -87,7 +87,8 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @Override
     public void onArmorTick(@Nonnull final World world, @Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles) {
         AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
-            if(stack.getItem() instanceof IAkashicGoggles) ((IAkashicGoggles)stack.getItem()).onAkashicTick(player, goggles, stack);
+            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
+            if(equipable != null) equipable.onAkashicTick(player, goggles, stack);
         });
     }
 
@@ -227,7 +228,8 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
                     @Override
                     public void onWornTick(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
                         AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
-                            if(stack.getItem() instanceof IAkashicGoggles) ((IAkashicGoggles)stack.getItem()).onAkashicTick(wearer, goggles, stack);
+                            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
+                            if(equipable != null) equipable.onAkashicTick(wearer, goggles, stack);
                         });
                     }
                 }) : super.getCapability(capability, facing);
