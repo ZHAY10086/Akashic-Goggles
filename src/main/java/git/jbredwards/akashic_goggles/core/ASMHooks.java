@@ -29,6 +29,7 @@ import micdoodle8.mods.galacticraft.core.client.gui.overlay.OverlaySensorGlasses
 import mods.railcraft.client.core.AuraKeyHandler;
 import mods.railcraft.common.items.ItemGoggles;
 import mods.railcraft.common.items.RailcraftItems;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -37,12 +38,16 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -284,5 +289,25 @@ public final class ASMHooks
 
     public static boolean isSameAura(@Nonnull final ItemStack stack, @Nonnull final ItemStack other) {
         return ItemStack.areItemsEqualIgnoreDurability(stack, other) && ItemGoggles.getCurrentAura(stack) == ItemGoggles.getCurrentAura(other);
+    }
+
+    // -------
+    // Vanilla
+    // -------
+
+    @SideOnly(Side.CLIENT)
+    public static void onBarrierAkashicTick(@Nonnull final EntityLivingBase player, @Nonnull final Block barrier, @Nonnull final EnumParticleTypes particle) {
+        if(player.world.isRemote && player == Minecraft.getMinecraft().player && !Minecraft.getMinecraft().isGamePaused()) {
+            @Nonnull final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            final int originX = MathHelper.fastFloor(player.posX), originY = MathHelper.fastFloor(player.posY), originZ = MathHelper.fastFloor(player.posZ);
+            for(int i = 0; i < 1333; ++i) {
+                final int offset = player.world.rand.nextBoolean() ? 32 : 16,
+                        x = originX + player.world.rand.nextInt(offset) - player.world.rand.nextInt(offset),
+                        y = originY + player.world.rand.nextInt(offset) - player.world.rand.nextInt(offset),
+                        z = originZ + player.world.rand.nextInt(offset) - player.world.rand.nextInt(offset);
+
+                if(player.world.getBlockState(pos.setPos(x, y, z)).getBlock() == barrier) player.world.spawnParticle(particle, x + 0.5, y + 0.5, z + 0.5, 0, 0, 0);
+            }
+        }
     }
 }

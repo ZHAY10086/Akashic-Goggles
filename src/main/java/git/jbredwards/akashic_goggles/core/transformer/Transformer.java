@@ -18,6 +18,7 @@ package git.jbredwards.akashic_goggles.core.transformer;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.tree.*;
@@ -412,6 +413,21 @@ public final class Transformer implements IClassTransformer, Opcodes
         {
             addSupport("thaumcraft/common/items/armor/ItemGoggles <init>()V", ASMConsumer.identity());
         }
+        // =======
+        // Vanilla
+        // =======
+        {
+            addSupport("net/minecraft/block/BlockBarrier <init>()V", FMLLaunchHandler.side().isServer() ? ASMConsumer.identity() :
+            addMethod("onAkashicTick", "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)V", adapter -> {
+                // Allow barrier blocks to render from within Akashic Goggles.
+                // Old: N/A
+                // New: { ASMHooks.onBarrierAkashicTick(player, this, EnumParticleTypes.BARRIER); }
+                adapter.visitVarInsn(ALOAD, 1);
+                adapter.loadThis();
+                adapter.visitFieldInsn(GETSTATIC, "net/minecraft/util/EnumParticleTypes", "BARRIER", "Lnet/minecraft/util/EnumParticleTypes;");
+                hook(adapter, "onBarrierAkashicTick", "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/block/Block;Lnet/minecraft/util/EnumParticleTypes;)V");
+            }));
+        }
     }
 
     private static void addMapping(@Nonnull final String targetMethod, @Nonnull final Consumer<ImmutableMap.Builder<ASMPredicate, ASMConsumer>> mapper) {
@@ -478,7 +494,7 @@ public final class Transformer implements IClassTransformer, Opcodes
             }
         }
 
-        @Nonnull final ClassWriter writer = new ClassWriter(0);
+        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classNode.accept(writer);
         return writer.toByteArray();
     }
@@ -530,7 +546,7 @@ public final class Transformer implements IClassTransformer, Opcodes
 
     @Nonnull
     private static String obfuscate(@Nonnull final String deobfName, @Nonnull final String obfName) {
-        return /*FMLLaunchHandler.isDeobfuscatedEnvironment() ? deobfName :*/ obfName;
+        return FMLLaunchHandler.isDeobfuscatedEnvironment() ? deobfName : obfName;
     }
 
     @Nonnull

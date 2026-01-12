@@ -28,7 +28,7 @@ import java.util.Map;
  * @author jbred
  *
  */
-@IFMLLoadingPlugin.SortingIndex(1000)
+@IFMLLoadingPlugin.SortingIndex(1001)
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.Name(Tags.MOD_NAME + " Plugin")
 public final class ASMHandler implements IFMLLoadingPlugin
