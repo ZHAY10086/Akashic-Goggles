@@ -31,7 +31,6 @@ import vazkii.arl.recipe.ModRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /**
  *
@@ -52,6 +51,7 @@ public class RecipeAkashicCombine extends ModRecipe
     @Nonnull
     @Override
     public ItemStack getCraftingResult(@Nonnull final InventoryCrafting inv) {
+        if(!AkashicGogglesConfig.Goggles.allowRecipe) return ItemStack.EMPTY;
         int gogglesSlot = -1;
 
         @Nonnull ItemStack goggles = ItemStack.EMPTY;
@@ -65,8 +65,7 @@ public class RecipeAkashicCombine extends ModRecipe
 
         if(goggles.isEmpty()) return ItemStack.EMPTY;
 
-        InventoryAkashicGoggles.setValid(goggles); // Only "valid" goggles have the capability, so temporarily mark the result as valid.
-        @Nonnull final IDropInItem gogglesHandler = Objects.requireNonNull(goggles.getCapability(IDropInItem.DROP_IN_CAPABILITY, null));
+        @Nonnull final IDropInItem gogglesHandler = new InventoryAkashicGoggles(goggles);
         InventoryAkashicGoggles.setInvalid(goggles); // Ensure players can't put items into the "result" Akashic Goggles before crafting.
 
         @Nullable final EntityPlayer player = ForgeHooks.getCraftingPlayer();

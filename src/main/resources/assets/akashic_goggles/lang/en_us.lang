@@ -1,7 +1,11 @@
 item.akashic_goggles:goggles.name=Akashic Goggles
 item.akashic_goggles:goggles.locked.name=Akashic Goggles (Locked)
-item.akashic_goggles:goggles.locked.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once.
-item.akashic_goggles:goggles.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once, by clicking them into this or by combining them with this in a crafting table.
+item.akashic_goggles:goggles.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once%s.
+item.akashic_goggles:goggles.tooltip.all=, by clicking them into this or by combining them with this in a crafting table
+item.akashic_goggles:goggles.tooltip.dropInOnly=, by clicking them into this
+item.akashic_goggles:goggles.tooltip.none=
+item.akashic_goggles:goggles.tooltip.locked=
+item.akashic_goggles:goggles.tooltip.recipeOnly=, by combining them with this in a crafting table
 item.akashic_goggles:goggles.tooltip_applicable=This item may be applied to Akashic Goggles.
 itemGroup.akashic_goggles.tab=Akashic Goggles
 
@@ -23,6 +27,10 @@ config.akashic_goggles.modCompat.tooltip=Config settings for builtin Akashic Gog
 
 config.akashic_goggles.addApplicableTooltip=Add Tooltip For Applicable
 config.akashic_goggles.addApplicableTooltip.tooltip=Add tooltips for world-revealing eyewear that may be applied to Akashic Goggles.
+config.akashic_goggles.allowDropIn=Allow Drop-In Application
+config.akashic_goggles.allowDropIn.tooltip=World-revealing eyewear that may be applied to Akashic Goggles may be applied by right-clicking them into the Akashic Goggles.
+config.akashic_goggles.allowRecipe=Allow Recipe Application
+config.akashic_goggles.allowRecipe.tooltip=World-revealing eyewear that may be applied to Akashic Goggles may be applied by combining them with the Akashic Goggles in a crafting table.
 config.akashic_goggles.armorAttributes=Apply Nested Armor Attributes
 config.akashic_goggles.armorAttributes.tooltip=While wearing Akashic Goggles that are holding items with armor attributes, those attributes should be applied to the wearer.
 config.akashic_goggles.baubleType=Bauble Type

@@ -33,6 +33,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderPlayer;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -104,7 +105,17 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(@Nonnull final ItemStack goggles, @Nullable final World worldIn, @Nonnull final List<String> tooltip, @Nonnull final ITooltipFlag flagIn) {
-        TooltipHandler.tooltipIfShift(tooltip, () -> TooltipHandler.addToTooltip(tooltip, getTranslationKey() + ".tooltip"));
+        TooltipHandler.tooltipIfShift(tooltip, () -> {
+            @Nonnull final String info;
+            if(!InventoryAkashicGoggles.isMutable(goggles)) info = "locked";
+            else if(AkashicGogglesConfig.Goggles.allowDropIn && AkashicGogglesConfig.Goggles.allowRecipe) info = "all";
+            else if(AkashicGogglesConfig.Goggles.allowDropIn) info = "dropInOnly";
+            else if(AkashicGogglesConfig.Goggles.allowRecipe) info = "recipeOnly";
+            else info = "none";
+
+            @Nonnull final String key = getTranslationKey() + ".tooltip";
+            TooltipHandler.addToTooltip(tooltip, I18n.format(key, I18n.format(key + '.' + info)));
+        });
     }
 
     @Nonnull

@@ -98,12 +98,12 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return super.hasCapability(capability, null) && isValid(goggles) ? super.getCapability(capability, null) : null;
+        return hasCapability(capability, null) ? DROP_IN_CAPABILITY.cast(this) : null;
     }
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return super.hasCapability(capability, null) && isValid(goggles);
+        return super.hasCapability(capability, null) && AkashicGogglesConfig.Goggles.allowDropIn && isValid(goggles);
     }
 
     // Allow akashic goggles to be locked globally.
@@ -113,7 +113,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
 
     // Let's prevent people from inserting items into JEI akashic goggles...
     public static void setValid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, true); }
-    public static void setInvalid(@Nonnull final ItemStack goggles) { ItemNBTHelper.setBoolean(goggles, NBT_IS_VALID, false); }
+    public static void setInvalid(@Nonnull final ItemStack goggles) { ItemNBTHelper.getNBT(goggles).removeTag(NBT_IS_VALID); }
     public static boolean isValid(@Nonnull final ItemStack goggles) {
         return ItemNBTHelper.getBoolean(goggles, NBT_IS_VALID, false) && isMutable(goggles);
     }

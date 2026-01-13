@@ -54,6 +54,12 @@ public final class AkashicGogglesConfig
         @Config.LangKey("config." + Tags.MOD_ID + ".addApplicableTooltip")
         public static boolean addApplicableTooltip = true;
 
+        @Config.LangKey("config." + Tags.MOD_ID + ".allowDropIn")
+        public static boolean allowDropIn = true;
+
+        @Config.LangKey("config." + Tags.MOD_ID + ".allowRecipe")
+        public static boolean allowRecipe = true;
+
         @Config.LangKey("config." + Tags.MOD_ID + ".armorAttributes")
         public static boolean armorAttributes = false;
 
