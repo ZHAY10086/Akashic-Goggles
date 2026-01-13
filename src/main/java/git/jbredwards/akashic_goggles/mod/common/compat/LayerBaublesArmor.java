@@ -20,10 +20,11 @@ import baubles.api.cap.BaublesCapabilities;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
@@ -40,8 +41,6 @@ import java.util.stream.IntStream;
 @SideOnly(Side.CLIENT)
 public class LayerBaublesArmor extends LayerBipedArmor
 {
-    @Nonnull
-    protected static final EntityLiving FAKE_WEARER = new EntityLiving(null) {}; // World may be null.
     public LayerBaublesArmor(@Nonnull final RenderLivingBase<?> rendererIn) { super(rendererIn); }
 
     @Override
@@ -53,10 +52,10 @@ public class LayerBaublesArmor extends LayerBipedArmor
         // A hack to render any armor item, regardless of what the entity actually has equipped.
         @Nullable final IItemHandler inventory = entity.getCapability(BaublesCapabilities.CAPABILITY_BAUBLES, null);
         if(inventory != null) IntStream.range(0, inventory.getSlots()).mapToObj(inventory::getStackInSlot).filter(CompatHandler::test).findFirst().ifPresent(stack -> {
-            FAKE_WEARER.setItemStackToSlot(EntityLiving.getSlotForItemStack(stack), stack);
-            FAKE_WEARER.setSneaking(entity.isSneaking());
-            FAKE_WEARER.ticksExisted = entity.ticksExisted;
-            super.doRenderLayer(FAKE_WEARER, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scale);
+            @Nonnull final ItemStack previous = ((EntityPlayer)entity).inventory.armorInventory.set(EntityEquipmentSlot.HEAD.getIndex(), stack);
+
+            try { super.doRenderLayer(entity, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scale); }
+            finally { ((EntityPlayer)entity).inventory.armorInventory.set(EntityEquipmentSlot.HEAD.getIndex(), previous); }
         });
     }
 }
