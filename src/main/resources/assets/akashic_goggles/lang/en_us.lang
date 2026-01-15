@@ -1,3 +1,30 @@
+commands.akashic_goggles.copy.click=Click to copy to clipboard
+commands.akashic_goggles.invalidItem=Held item in main hand is not Akashic Goggles
+commands.akashic_goggles.usage=Use /akashic_goggles <subcommand>
+
+commands.akashic_goggles.lock.noChange=Akashic Goggles are already locked
+commands.akashic_goggles.lock.success=Locked Akashic Goggles
+commands.akashic_goggles.lock.usage=Use /akashic_goggles lock [player] [slots]
+commands.akashic_goggles.nbt.success=Serialized Akashic Goggles: %s
+commands.akashic_goggles.nbt.usage=Use /akashic_goggles nbt [player]
+commands.akashic_goggles.pop.all=all items
+commands.akashic_goggles.pop.multiple=top items
+commands.akashic_goggles.pop.none=No items could be popped off Akashic Goggles
+commands.akashic_goggles.pop.single=top item
+commands.akashic_goggles.pop.success=Popped %s off Akashic Goggles
+commands.akashic_goggles.pop.usage=Use /akashic_goggles pop [player] [destroy|give]
+commands.akashic_goggles.push.all=all applicable items from inventory
+commands.akashic_goggles.push.invalidItem=Held item in offhand cannot be pushed into Akashic Goggles
+commands.akashic_goggles.push.invalidItemInventory=No items from inventory could be pushed into Akashic Goggles
+commands.akashic_goggles.push.invalidItemProvided=Provided item cannot be pushed into Akashic Goggles
+commands.akashic_goggles.push.single=item
+commands.akashic_goggles.push.success=Pushed %s into Akashic Goggles
+commands.akashic_goggles.push.tagError=Data tag parsing failed: %s
+commands.akashic_goggles.push.usage=Use /akashic_goggles push [player] [<item> [data] [dataTag]] OR /akashic_goggles push [player] [consume|keep] [all]
+commands.akashic_goggles.unlock.noChange=Akashic Goggles are already unlocked
+commands.akashic_goggles.unlock.success=Unlocked Akashic Goggles
+commands.akashic_goggles.unlock.usage=Use /akashic_goggles unlock [player]
+
 item.akashic_goggles:goggles.name=Akashic Goggles
 item.akashic_goggles:goggles.locked.name=Akashic Goggles (Locked)
 item.akashic_goggles:goggles.tooltip=The Goggles of Goggles! Wear many different pieces of world-revealing eyewear at once%s.

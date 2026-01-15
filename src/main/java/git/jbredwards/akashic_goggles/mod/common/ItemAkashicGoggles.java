@@ -43,7 +43,6 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -62,7 +61,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import thaumcraft.api.items.IGoggles;
 import thaumcraft.api.items.IRevealer;
 import vazkii.arl.item.ItemMod;
-import vazkii.arl.util.ItemNBTHelper;
 import vazkii.arl.util.TooltipHandler;
 
 import javax.annotation.Nonnull;
@@ -88,7 +86,7 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @Override
     public void onArmorTick(@Nonnull final World world, @Nonnull final EntityPlayer player, @Nonnull final ItemStack goggles) {
         AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
-            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
+            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack.getItem());
             if(equipable != null) equipable.onAkashicTick(player, goggles, stack);
         });
     }
@@ -142,25 +140,13 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
     @Override
     public ActionResult<ItemStack> onItemRightClick(@Nonnull final World worldIn, @Nonnull final EntityPlayer playerIn, @Nonnull final EnumHand handIn) {
         @Nonnull final ItemStack goggles = playerIn.getHeldItem(handIn);
-        @Nonnull final NBTTagList inventory = ItemNBTHelper.getList(goggles, InventoryAkashicGoggles.NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false);
-        if(!inventory.isEmpty() && InventoryAkashicGoggles.isMutable(goggles)) {
-            final int inventoryLocked = ItemNBTHelper.getInt(goggles, InventoryAkashicGoggles.NBT_INVENTORY_LOCKED, 0);
-            if(inventoryLocked < inventory.tagCount()) {
-                if(!worldIn.isRemote) {
-                    if(!playerIn.isSneaking()) ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack((NBTTagCompound)inventory.removeTag(inventory.tagCount() - 1)));
-                    else { // Allow players to remove all items inside the Akashic Goggles at once.
-                        for(int slot = inventory.tagCount() - 1; slot >= inventoryLocked; slot--) ItemHandlerHelper.giveItemToPlayer(playerIn,
-                                new ItemStack(inventoryLocked == 0 ? inventory.getCompoundTagAt(slot) : (NBTTagCompound)inventory.removeTag(slot)));
-                        if(inventoryLocked == 0) ItemNBTHelper.getNBT(goggles).removeTag(InventoryAkashicGoggles.NBT_INVENTORY);
-                    }
-                }
+        @Nonnull final List<NBTTagCompound> poppedStacks = InventoryAkashicGoggles.popItemOff(goggles, !playerIn.isSneaking(), worldIn.isRemote);
 
-                playerIn.playSound(AkashicGoggles.ITEM_GOGGLES_EMPTY, 1, 1);
-                return ActionResult.newResult(EnumActionResult.SUCCESS, goggles);
-            }
-        }
+        if(poppedStacks.isEmpty()) return ActionResult.newResult(EnumActionResult.PASS, goggles);
+        else if(!worldIn.isRemote) poppedStacks.forEach(nbt -> ItemHandlerHelper.giveItemToPlayer(playerIn, new ItemStack(nbt)));
 
-        return ActionResult.newResult(EnumActionResult.PASS, goggles);
+        playerIn.playSound(AkashicGoggles.ITEM_GOGGLES_EMPTY, 1, 1);
+        return ActionResult.newResult(EnumActionResult.SUCCESS, goggles);
     }
 
     @Override
@@ -239,7 +225,7 @@ public class ItemAkashicGoggles extends ItemMod implements IRenderBauble, IGoggl
                     @Override
                     public void onWornTick(@Nonnull final ItemStack goggles, @Nonnull final EntityLivingBase wearer) {
                         AkashicGogglesUtil.getContainedStacks(goggles).forEach(stack -> {
-                            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
+                            @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack.getItem());
                             if(equipable != null) equipable.onAkashicTick(wearer, goggles, stack);
                         });
                     }

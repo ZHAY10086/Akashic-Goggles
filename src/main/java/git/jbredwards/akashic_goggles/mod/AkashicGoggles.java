@@ -21,6 +21,8 @@ import git.jbredwards.akashic_goggles.mod.client.ModelHeadwear;
 import git.jbredwards.akashic_goggles.mod.common.InventoryAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.ItemAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.RecipeAkashicCombine;
+import git.jbredwards.akashic_goggles.mod.common.command.ClickToCopyHandler;
+import git.jbredwards.akashic_goggles.mod.common.command.CommandAkashicGoggles;
 import git.jbredwards.akashic_goggles.mod.common.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -43,8 +45,10 @@ import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.client.resource.VanillaResourceType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -70,6 +74,11 @@ public final class AkashicGoggles
     public static final boolean HAS_BAUBLES = Loader.isModLoaded("baubles");
 
     @Mod.EventHandler
+    static void construct(@Nonnull final FMLConstructionEvent event) {
+        ClickToCopyHandler.construct();
+    }
+
+    @Mod.EventHandler
     static void preInit(@Nonnull final FMLPreInitializationEvent event) {
         CompatHandler.preInit();
         FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) ->
@@ -81,6 +90,11 @@ public final class AkashicGoggles
     static void postInitClient(@Nonnull final FMLPostInitializationEvent event) {
         CompatHandler.postInitClient();
         createMetadataTranslated(Objects.requireNonNull(Loader.instance().activeModContainer()));
+    }
+
+    @Mod.EventHandler
+    static void serverStarting(@Nonnull final FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandAkashicGoggles());
     }
 
     // -------------

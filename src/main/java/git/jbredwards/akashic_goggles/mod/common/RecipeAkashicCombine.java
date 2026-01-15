@@ -68,7 +68,6 @@ public class RecipeAkashicCombine extends ModRecipe
         @Nonnull final IDropInItem gogglesHandler = new InventoryAkashicGoggles(goggles);
         InventoryAkashicGoggles.setInvalid(goggles); // Ensure players can't put items into the "result" Akashic Goggles before crafting.
 
-        @Nullable final EntityPlayer player = ForgeHooks.getCraftingPlayer();
         boolean nonEmpty = false;
         for(int i = 0; i < inv.getSizeInventory(); i++) {
             if(i == gogglesSlot) continue;
@@ -77,7 +76,7 @@ public class RecipeAkashicCombine extends ModRecipe
             if(!stack.isEmpty()) {
                 nonEmpty = true;
 
-                if(gogglesHandler.canDropItemIn(player, goggles, stack)) goggles = gogglesHandler.dropItemIn(player, goggles, stack.copy());
+                if(gogglesHandler.canDropItemIn(null, goggles, stack)) goggles = gogglesHandler.dropItemIn(null, goggles, stack.copy());
                 else return ItemStack.EMPTY;
             }
         }

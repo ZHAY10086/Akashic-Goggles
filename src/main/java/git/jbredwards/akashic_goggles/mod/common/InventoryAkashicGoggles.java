@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -49,6 +50,8 @@ import vazkii.arl.util.ItemNBTHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -72,7 +75,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @Override
     public boolean canDropItemIn(@Nullable final EntityPlayer player, @Nonnull final ItemStack goggles, @Nonnull final ItemStack stack) { return canDropIn(player, goggles, stack); }
     public static boolean canDropIn(@Nullable final EntityPlayer player, @Nullable final ItemStack goggles, @Nonnull final ItemStack stack) {
-        @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack);
+        @Nullable final IAkashicGoggles equipable = IAkashicGoggles.get(stack.getItem());
 
         if(equipable == null || !equipable.canDropInAkashic(player, goggles, stack)) return false;
         else if(ArrayUtils.contains(AkashicGogglesConfig.Goggles.blacklist, String.valueOf(stack.getItem().getRegistryName()))) return false;
@@ -95,6 +98,29 @@ public class InventoryAkashicGoggles extends AbstractDropIn
         return goggles;
     }
 
+    @Nonnull
+    public static List<NBTTagCompound> popItemOff(@Nonnull final ItemStack goggles, final boolean single, final boolean simulate) {
+        @Nonnull final List<NBTTagCompound> poppedStacks = new ArrayList<>();
+        @Nonnull final NBTTagList inventory = ItemNBTHelper.getList(goggles, NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false);
+        if(!inventory.isEmpty() && isMutable(goggles)) {
+            final int inventoryLocked = getLocked(goggles);
+            if(inventoryLocked < inventory.tagCount()) {
+                if(single) {
+                    poppedStacks.add(simulate ? inventory.getCompoundTagAt(inventory.tagCount() - 1) : (NBTTagCompound)inventory.removeTag(inventory.tagCount() - 1));
+                    if(!simulate && inventory.isEmpty()) ItemNBTHelper.getNBT(goggles).removeTag(NBT_INVENTORY);
+                }
+
+                else { // Allow players to remove all items inside the Akashic Goggles at once.
+                    final boolean unlocked = inventoryLocked == 0;
+                    for(int slot = inventory.tagCount() - 1; slot >= inventoryLocked; slot--) poppedStacks.add(simulate || unlocked ? inventory.getCompoundTagAt(slot) : (NBTTagCompound)inventory.removeTag(slot));
+                    if(!simulate && unlocked) ItemNBTHelper.getNBT(goggles).removeTag(NBT_INVENTORY);
+                }
+            }
+        }
+
+        return poppedStacks;
+    }
+
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
@@ -104,6 +130,10 @@ public class InventoryAkashicGoggles extends AbstractDropIn
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
         return super.hasCapability(capability, null) && AkashicGogglesConfig.Goggles.allowDropIn && isValid(goggles);
+    }
+
+    public static int getLocked(@Nonnull final ItemStack goggles) {
+        return ItemNBTHelper.getInt(goggles, NBT_INVENTORY_LOCKED, 0);
     }
 
     // Allow akashic goggles to be locked globally.
@@ -175,7 +205,7 @@ public class InventoryAkashicGoggles extends AbstractDropIn
             if(!ItemNBTHelper.getBoolean(event.getStack(), NBT_IS_VALID, false) && ItemNBTHelper.getList(event.getStack(), NBT_INVENTORY, Constants.NBT.TAG_COMPOUND, false).isEmpty()) return;
 
             @Nonnull final ItemStack[] inventory = AkashicGogglesUtil.getContainedStacks(event.getStack()).toArray(ItemStack[]::new);
-            final int inventoryLocked = ItemNBTHelper.getInt(event.getStack(), NBT_INVENTORY_LOCKED, 0);
+            final int inventoryLocked = getLocked(event.getStack());
 
             final boolean immutable = !isMutable(event.getStack());
             final int slotsForRender = inventory.length - (immutable ? 1 : 0);

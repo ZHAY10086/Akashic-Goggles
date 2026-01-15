@@ -18,6 +18,7 @@ package git.jbredwards.akashic_goggles.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -33,25 +34,25 @@ import javax.annotation.Nullable;
 public interface IAkashicGoggles
 {
     /**
-     * @return An {@link IAkashicGoggles} handler from the provided ItemStack.
+     * @return An {@link IAkashicGoggles} handler from the provided item.
      *
-     * @throws NullPointerException If stack is null.
+     * @throws NullPointerException If item is null.
      * @since 1.0.0
      * @author jbred
      */
     @Nullable
-    static IAkashicGoggles get(@Nonnull final ItemStack stack) {
-        if(stack.getItem() instanceof IAkashicGoggles) return (IAkashicGoggles)stack.getItem();
+    static IAkashicGoggles get(@Nonnull final Item item) {
+        if(item instanceof IAkashicGoggles) return (IAkashicGoggles)item;
 
-        @Nonnull final Block block = Block.getBlockFromItem(stack.getItem());
+        @Nonnull final Block block = Block.getBlockFromItem(item);
         return block instanceof IAkashicGoggles ? (IAkashicGoggles)block : null;
     }
 
     /**
-     * @param player The entity wearing Akashic Goggles.
+     * @param player Entity performing the drop-in action, or null if not using drop-in.
      * @param goggles The Akashic Goggles ItemStack.
      * @param stack This ItemStack.
-     * @return True if this stack can be dropped into the Akashic Goggles.
+     * @return True if this stack can be pushed into the Akashic Goggles.
      *
      * @throws NullPointerException If stack is null.
      * @since 1.0.0
@@ -62,7 +63,7 @@ public interface IAkashicGoggles
     }
 
     /**
-     * @param player The entity wearing Akashic Goggles.
+     * @param player Entity performing the drop-in action, or null if not using drop-in.
      * @param goggles The Akashic Goggles ItemStack.
      * @param stack This ItemStack.
      * @param other The ItemStack to compare.
