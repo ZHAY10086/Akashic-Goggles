@@ -66,7 +66,7 @@ import java.util.Objects;
  *
  */
 @Mod.EventBusSubscriber
-@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, useMetadata = true,
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, updateJSON = Tags.UPDATE_JSON,
 dependencies = "required-before:autoreglib@[1.3-32,);",
 guiFactory = "git.jbredwards.akashic_goggles.mod.client.config.AkashicGogglesGuiFactory")
 public final class AkashicGoggles
@@ -81,8 +81,10 @@ public final class AkashicGoggles
     @Mod.EventHandler
     static void preInit(@Nonnull final FMLPreInitializationEvent event) {
         CompatHandler.preInit();
-        FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) ->
-        DataFixesManager.processItemStack(fixer, compound.getCompoundTag("tag"), versionIn, InventoryAkashicGoggles.NBT_INVENTORY));
+        FMLCommonHandler.instance().getDataFixer().registerWalker(FixTypes.ITEM_INSTANCE, (fixer, compound, versionIn) -> {
+            DataFixesManager.processItemStack(fixer, compound.getCompoundTag("tag"), versionIn, InventoryAkashicGoggles.NBT_INVENTORY);
+            return compound;
+        });
     }
 
     @Mod.EventHandler
