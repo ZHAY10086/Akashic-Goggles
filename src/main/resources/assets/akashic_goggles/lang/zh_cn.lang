@@ -36,7 +36,7 @@ item.akashic_goggles:goggles.tooltip.recipeOnly=，在工作台中与该物品�
 item.akashic_goggles:goggles.tooltip_applicable=该物品可装入阿卡夏护目镜。
 itemGroup.akashic_goggles.tab=阿卡夏护目镜
 
-mod.akashic_goggles.credits=\n- jbredwards：作者与维护者\n- CleanroomMC：制作了TemplateDevEnv
+mod.akashic_goggles.credits=\n- jbredwards：作者与维护者\n- CleanroomMC：制作了TemplateDevEnv\n- ZHAY10086：添加了简体中文语言支持
 mod.akashic_goggles.description=添加了究极的护目镜，允许你可同时佩戴多款信息显示护目镜。
 
 subtitles.akashic_goggles.item.empty=阿卡夏护目镜：倒空
